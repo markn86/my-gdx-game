@@ -1,15 +1,15 @@
 package screens;
 
-import view.WorldRenderer;
+import lib.OverlapTester;
 import model.InteractiveImage;
 import model.World;
+import view.WorldRenderer;
 
 import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL10;
-import com.badlogic.gdx.math.Rectangle;
 
 import controller.WorldController;
 
@@ -93,13 +93,13 @@ public class GameScreen implements Screen, InputProcessor {
         InteractiveImage jumpIcon = world.getInteractiveImage("jumpIcon");
         float pointTouchedX = x / (width / WorldRenderer.CAMERA_WIDTH);
         float pointTouchedY = (height - y) / (height / WorldRenderer.CAMERA_HEIGHT);
-        if (pointInRectangle(leftArrow.getBounds(), pointTouchedX, pointTouchedY)) {
+        if (OverlapTester.pointInRectangle(leftArrow.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.leftPressed();
         }
-        if (pointInRectangle(rightArrow.getBounds(), pointTouchedX, pointTouchedY)) {
+        if (OverlapTester.pointInRectangle(rightArrow.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.rightPressed();
         }
-        if (pointInRectangle(jumpIcon.getBounds(), pointTouchedX, pointTouchedY)) {
+        if (OverlapTester.pointInRectangle(jumpIcon.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.jumpPressed();
         }
         return true;
@@ -115,13 +115,13 @@ public class GameScreen implements Screen, InputProcessor {
         InteractiveImage jumpIcon = world.getInteractiveImage("jumpIcon");
         float pointTouchedX = x / (width / WorldRenderer.CAMERA_WIDTH);
         float pointTouchedY = (height - y) / (height / WorldRenderer.CAMERA_HEIGHT);
-        if (pointInRectangle(leftArrow.getBounds(), pointTouchedX, pointTouchedY)) {
+        if (OverlapTester.pointInRectangle(leftArrow.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.leftReleased();
         }
-        if (pointInRectangle(rightArrow.getBounds(), pointTouchedX, pointTouchedY)) {
+        if (OverlapTester.pointInRectangle(rightArrow.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.rightReleased();
         }
-        if (pointInRectangle(jumpIcon.getBounds(), pointTouchedX, pointTouchedY)) {
+        if (OverlapTester.pointInRectangle(jumpIcon.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.jumpReleased();
         }
         return true;
@@ -143,9 +143,5 @@ public class GameScreen implements Screen, InputProcessor {
     public boolean mouseMoved(int screenX, int screenY) {
         // TODO Auto-generated method stub
         return false;
-    }
-
-    public static boolean pointInRectangle (Rectangle r, float x, float y) {
-        return r.x <= x && r.x + r.width >= x && r.y <= y && r.y + r.height >= y;
     }
 }
