@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import model.Block;
-import model.World;
 import model.Character;
 import model.Character.State;
+import model.World;
 
 public class WorldController {
 
@@ -14,8 +14,8 @@ public class WorldController {
         LEFT, RIGHT, JUMP, FIRE
     }
 
-    private World world;
-    private Character character;
+    private final World world;
+    private final Character character;
     public static final float WORLD_SIZE = 10f;
 
     static Map<Keys, Boolean> keys = new HashMap<WorldController.Keys, Boolean>();
@@ -48,24 +48,25 @@ public class WorldController {
                 break;
             }
         }
-        if (character.falling == true) {
-            character.getVelocity().y = -Character.FALL_VELOCITY;
+        if (keys.get(Keys.JUMP)){
+            if (character.isdead == false) {
+                character.getVelocity().y = Character.JUMP_VELOCITY;
+            }
         } else {
-            if (keys.get(Keys.JUMP)){
-                if (character.isdead == false) {
-                    character.getVelocity().y = Character.JUMP_VELOCITY;
-                }
+        	if (character.falling == true) {
+                character.getVelocity().y = -Character.FALL_VELOCITY;
             } else {
-                character.getVelocity().y = 0;
+            	character.getVelocity().y = 0;
             }
         }
+
     }
 
     private void collisionDetectionBlocks() {
         for (Block block: world.getBlocks()) {
             // Horizontal-right
             if (keys.get(Keys.LEFT)){
-                if (character.getPosition().x + Character.WIDTH/2 >= block.getPosition().x + 0.20
+                if (character.getPosition().x + Character.WIDTH / 2 >= block.getPosition().x + 0.20
                         && character.getPosition().x + Character.WIDTH / 2 <= (block.getPosition().x + 1.50)
                         && character.getPosition().y + Character.HEIGHT / 2 >= block.getPosition().y
                         && character.getPosition().y + Character.HEIGHT / 2 <= (block.getPosition().y + 1)) {

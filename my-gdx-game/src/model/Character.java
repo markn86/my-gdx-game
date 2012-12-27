@@ -10,8 +10,8 @@ public class Character {
     }
 
     public static final float SPEED = 2f; // Units per second.
-    public static final float JUMP_VELOCITY = 100f;
-    public static final float FALL_VELOCITY = 20f;
+    public static final float JUMP_VELOCITY = 1f;
+    public static final float FALL_VELOCITY = 1f;
     public static final float SIZE = 0.5f; // Half unit.
     public static final float HEIGHT = 0.75f; // Half a unit
     public static final float WIDTH = 0.5f;
@@ -69,7 +69,7 @@ public class Character {
         this.state = newState;
     }
 
-    public void update(float delta) { //here the position changes
+    public void update(float delta) {
         position.add(velocity.tmp().mul(delta));
     }
 
