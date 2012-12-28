@@ -9,6 +9,8 @@ import model.Character;
 import model.Character.State;
 import model.World;
 
+import com.badlogic.gdx.math.Rectangle;
+
 public class WorldController {
 
     enum Keys {
@@ -34,72 +36,9 @@ public class WorldController {
 
     public void update(float delta) {
         processInput();
-        gravityDetection(delta);
-        collisionDetectionBlocks(delta);
+        gravityDetection();
+        collisionDetectionBlocks();
         character.update(delta);
-    }
-
-    private void gravityDetection(float delta) {
-        // Assume we are falling for now.
-        character.falling = true;
-        // Use this as a temp character.
-        System.out.println("Char 1" + character.getPosition());
-        Character tempChar = (Character) character.clone();
-        System.out.println("tempChar 1" + tempChar.getPosition());
-        tempChar.getVelocity().y = -Character.FALL_VELOCITY;
-        tempChar.update(delta);
-        System.out.println("Char 2" + character.getPosition());
-        System.out.println("tempChar 1" + tempChar.getPosition());
-        for (Block block: world.getBlocks()){
-            if (OverlapTester.overlapRectangles(block.getBounds(), tempChar.getBounds())) {
-                character.falling = false;
-                break;
-            }
-        }
-        if (keys.get(Keys.JUMP)){
-            if (character.isdead) {
-                character.getVelocity().y = Character.JUMP_VELOCITY;
-            }
-        } else {
-            if (character.falling) {
-                character.getVelocity().y = -Character.FALL_VELOCITY;
-            } else {
-                character.getVelocity().y = 0;
-            }
-        }
-    }
-
-    private void collisionDetectionBlocks(float delta) {
-        // Use this as a temp character.
-        Character tempChar = new Character(character.getPosition());
-        // Horizontal-left
-        if (keys.get(Keys.LEFT)) {
-            tempChar.getVelocity().x = -Character.SPEED;
-            tempChar.update(delta);
-        }
-        // Horizontal-right
-        if (keys.get(Keys.RIGHT)) {
-            tempChar.getVelocity().x = Character.SPEED;
-            tempChar.update(delta);
-        }
-        // Vertical-ceiling
-        if (keys.get(Keys.JUMP)) {
-            tempChar.getVelocity().y = Character.JUMP_VELOCITY;
-            tempChar.update(delta);
-        }
-        // Boolean to store if the user can move.
-        boolean canMove = true;
-        // Loop through the blocks.
-        for (Block block: world.getBlocks()) {
-            if (OverlapTester.overlapRectangles(block.getBounds(), tempChar.getBounds())) {
-                canMove = false;
-                break;
-            }
-        }
-        // If they can move, update.
-        if (canMove) {
-            character.setPosition(tempChar.getPosition());
-        }
     }
 
     private void processInput() {
@@ -126,6 +65,69 @@ public class WorldController {
                 character.getAcceleration().x = 0;
                 // Horizontal speed is 0
                 character.getVelocity().x = 0;
+            }
+        } else {
+            character.getVelocity().x = 0;
+            character.getVelocity().y = 0;
+        }
+    }
+
+    private void gravityDetection() {
+        // Assume we are falling for now.
+        character.falling = true;
+        // Use this as a temp rectangle.
+        Rectangle tempRect = new Rectangle(character.getPosition().x,
+                (float) (character.getPosition().y  - 0.05),
+                character.getBounds().width,
+                character.getBounds().height);
+        for (Block block : world.getBlocks()){
+            if (OverlapTester.overlapRectangles(block.getBounds(), tempRect)) {
+                character.falling = false;
+                break;
+            }
+        }
+        if (character.falling) {
+            character.getVelocity().y = -Character.FALL_VELOCITY;
+        } else {
+            character.getVelocity().y = 0;
+        }
+    }
+
+    private void collisionDetectionBlocks() {
+        float x = character.getPosition().x;
+        float y = character.getPosition().y;
+        // Horizontal-left
+        if (keys.get(Keys.LEFT)) {
+            x = (float) (x - 0.05);
+        }
+        // Horizontal-right
+        if (keys.get(Keys.RIGHT)) {
+            x = (float) (x + 0.05);
+        }
+        // Vertical-ceiling
+        if (keys.get(Keys.JUMP)) {
+            y = (float) (y + 0.05);
+        }
+        Rectangle tempRect = new Rectangle(x, y, character.getBounds().width, character.getBounds().height);
+        // Boolean to store if the user can move.
+        boolean canMove = true;
+        // Loop through the blocks.
+        for (Block block : world.getBlocks()) {
+            if (OverlapTester.overlapRectangles(block.getBounds(), tempRect)) {
+                canMove = false;
+                break;
+            }
+        }
+        // If they can move, update.
+        if (canMove) {
+            if (keys.get(Keys.LEFT)) {
+                character.getVelocity().x = -Character.SPEED;
+            }
+            if (keys.get(Keys.RIGHT)) {
+                character.getVelocity().x = Character.SPEED;
+            }
+            if (keys.get(Keys.JUMP)) {
+                character.getVelocity().y = Character.JUMP_VELOCITY;
             }
         } else {
             character.getVelocity().x = 0;

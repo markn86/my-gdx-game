@@ -26,11 +26,11 @@ public class Block {
         return bounds;
     }
 
-    public Float getWidth() {
+    public float getWidth() {
         return bounds.width;
     }
 
-    public Float getHeight() {
+    public float getHeight() {
         return bounds.height;
     }
 }

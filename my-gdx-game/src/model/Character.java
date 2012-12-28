@@ -3,7 +3,7 @@ package model;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
-public class Character implements Cloneable {
+public class Character {
 
     public enum State {
         IDLE, WALKING, JUMPING, DYING
@@ -120,12 +120,4 @@ public class Character implements Cloneable {
             }
         }
     }
-
-    public Object clone() {
-        try {
-            return super.clone();
-        } catch(Exception e) {
-            return null;
-        }
-   }
 }
