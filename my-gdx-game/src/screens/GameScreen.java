@@ -88,20 +88,28 @@ public class GameScreen implements Screen, InputProcessor {
         if (!Gdx.app.getType().equals(ApplicationType.Android)) {
             return false;
         }
+
         InteractiveImage leftArrow = world.getInteractiveImage("leftArrow");
         InteractiveImage rightArrow = world.getInteractiveImage("rightArrow");
         InteractiveImage jumpIcon = world.getInteractiveImage("jumpIcon");
+
         float pointTouchedX = x / (width / WorldRenderer.CAMERA_WIDTH);
         float pointTouchedY = (height - y) / (height / WorldRenderer.CAMERA_HEIGHT);
+
         if (OverlapTester.pointInRectangle(leftArrow.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.leftPressed();
+            controller.rightReleased();
         }
+
         if (OverlapTester.pointInRectangle(rightArrow.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.rightPressed();
+            controller.leftReleased();
         }
+
         if (OverlapTester.pointInRectangle(jumpIcon.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.jumpPressed();
         }
+
         return true;
     }
 
@@ -110,20 +118,26 @@ public class GameScreen implements Screen, InputProcessor {
         if (!Gdx.app.getType().equals(ApplicationType.Android)) {
             return false;
         }
+
         InteractiveImage leftArrow = world.getInteractiveImage("leftArrow");
         InteractiveImage rightArrow = world.getInteractiveImage("rightArrow");
         InteractiveImage jumpIcon = world.getInteractiveImage("jumpIcon");
+
         float pointTouchedX = x / (width / WorldRenderer.CAMERA_WIDTH);
         float pointTouchedY = (height - y) / (height / WorldRenderer.CAMERA_HEIGHT);
+
         if (OverlapTester.pointInRectangle(leftArrow.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.leftReleased();
-        }
-        if (OverlapTester.pointInRectangle(rightArrow.getBounds(), pointTouchedX, pointTouchedY)) {
+        } else if (OverlapTester.pointInRectangle(rightArrow.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.rightReleased();
-        }
-        if (OverlapTester.pointInRectangle(jumpIcon.getBounds(), pointTouchedX, pointTouchedY)) {
+        } else if (OverlapTester.pointInRectangle(jumpIcon.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.jumpReleased();
+        } else {
+        	controller.leftReleased();
+        	controller.rightReleased();
+        	controller.jumpReleased();
         }
+
         return true;
     }
 
