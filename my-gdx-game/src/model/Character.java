@@ -17,13 +17,14 @@ public class Character {
     public static final float WIDTH = 0.5f;
 
     public boolean won = false;
+    public float lastTimeHit = 0;
     public int health = 3;
     public boolean isdead = false;
     public boolean shooting = false;
+
     Vector2 position = new Vector2();
-    Vector2 acceleration = new Vector2();
     Vector2 velocity = new Vector2();
-    Rectangle bounds = new Rectangle();
+
     State state = State.IDLE;
     boolean facingLeft = true;
     public boolean falling = false;
@@ -33,12 +34,6 @@ public class Character {
 
     public Character(Vector2 position) {
         this.position = position;
-        this.bounds.height = HEIGHT;
-        this.bounds.width = WIDTH;
-    }
-
-    public boolean isFacingLeft() {
-        return facingLeft;
     }
 
     public void setFacingLeft(boolean facingLeft) {
@@ -49,16 +44,8 @@ public class Character {
         return position;
     }
 
-    public Vector2 getAcceleration() {
-        return acceleration;
-    }
-
     public Vector2 getVelocity() {
         return velocity;
-    }
-
-    public Rectangle getBounds() {
-        return bounds;
     }
 
     public State getState() {
@@ -81,10 +68,11 @@ public class Character {
         return shooting;
     }
 
-    public void hit() {
+    public void hit(float delta) {
         if (health >= 0){
             health--;
         }
+        lastTimeHit = delta;
     }
 
     public int getHealth() {
@@ -105,7 +93,7 @@ public class Character {
 
     public void setCharacterImage() {
         if (state == State.WALKING) {
-            if (this.isFacingLeft()) {
+            if (this.facingLeft) {
                 if (characterImage == "walking_left_1") {
                     characterImage = "walking_left_2";
                 } else {
@@ -119,5 +107,15 @@ public class Character {
                 }
             }
         }
+    }
+
+    public Rectangle getBounds() {
+        Rectangle bounds = new Rectangle();
+        bounds.width = SIZE;
+        bounds.height = SIZE;
+        bounds.x = position.x;
+        bounds.y = position.y;
+
+        return bounds;
     }
 }

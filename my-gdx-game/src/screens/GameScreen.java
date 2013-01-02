@@ -133,9 +133,9 @@ public class GameScreen implements Screen, InputProcessor {
         } else if (OverlapTester.pointInRectangle(jumpIcon.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.jumpReleased();
         } else {
-        	controller.leftReleased();
-        	controller.rightReleased();
-        	controller.jumpReleased();
+            controller.leftReleased();
+            controller.rightReleased();
+            controller.jumpReleased();
         }
 
         return true;

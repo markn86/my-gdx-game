@@ -8,14 +8,9 @@ public class Block {
     public static final float SIZE = 1f;
 
     Vector2 position = new Vector2();
-    Rectangle bounds = new Rectangle();
 
     public Block(Vector2 pos) {
         this.position = pos;
-        this.bounds.width = SIZE;
-        this.bounds.height = SIZE;
-        this.bounds.x = position.x;
-        this.bounds.y = position.y;
     }
 
     public Vector2 getPosition() {
@@ -23,14 +18,12 @@ public class Block {
     }
 
     public Rectangle getBounds() {
+        Rectangle bounds = new Rectangle();
+        bounds.width = SIZE;
+        bounds.height = SIZE;
+        bounds.x = position.x;
+        bounds.y = position.y;
+
         return bounds;
-    }
-
-    public float getWidth() {
-        return bounds.width;
-    }
-
-    public float getHeight() {
-        return bounds.height;
     }
 }

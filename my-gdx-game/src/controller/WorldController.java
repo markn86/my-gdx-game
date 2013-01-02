@@ -22,6 +22,9 @@ public class WorldController {
     private final Character character;
     public static final float WORLD_SIZE = 10f;
 
+    // Store the time we are at.
+    public static float currentDelta;
+
     static Map<Keys, Boolean> keys = new HashMap<WorldController.Keys, Boolean>();
     static {
         keys.put(Keys.LEFT, false);
@@ -36,14 +39,16 @@ public class WorldController {
     }
 
     public void update(float delta) {
+        // Set the current time to static variable that can be accessed by other classes.
+        currentDelta = delta;
         // Begin the gaming process.
         processInput();
         gravityDetection();
         collisionDetection();
         character.update(delta);
         for (Flamer flamer : world.getFlamers()) {
-        	collisionDetectionFlamers(flamer);
-        	flamer.update(delta);
+            collisionDetectionFlamers(flamer);
+            flamer.update(delta);
         }
     }
 
@@ -82,8 +87,8 @@ public class WorldController {
         // Use this as a temp rectangle.
         Rectangle tempRect = new Rectangle(character.getPosition().x,
                 (float) (character.getPosition().y  - 0.05),
-                character.getBounds().width,
-                character.getBounds().height);
+                Character.WIDTH,
+                Character.HEIGHT);
         for (Block block : world.getBlocks()){
             if (OverlapTester.overlapRectangles(block.getBounds(), tempRect)) {
                 character.falling = false;
@@ -98,7 +103,7 @@ public class WorldController {
     }
 
     private void collisionDetection() {
-    	// Store the characters x and y position.
+        // Store the characters x and y position.
         float x = character.getPosition().x;
         float y = character.getPosition().y;
         // Horizontal-left
@@ -113,9 +118,11 @@ public class WorldController {
         if (keys.get(Keys.JUMP)) {
             y = (float) (y + 0.05);
         }
-        Rectangle tempRect = new Rectangle(x, y, character.getBounds().width, character.getBounds().height);
+        Rectangle tempRect = new Rectangle(x, y, Character.WIDTH, Character.HEIGHT);
         // Boolean to store if the user can move.
         boolean canMove = true;
+        // Boolean to store if the user has been hit.
+        boolean isHit = false;
         // Loop through the blocks.
         for (Block block : world.getBlocks()) {
             if (OverlapTester.overlapRectangles(block.getBounds(), tempRect)) {
@@ -126,12 +133,14 @@ public class WorldController {
         // Loop through the flamers.
         for (Flamer block : world.getFlamers()) {
             if (OverlapTester.overlapRectangles(block.getBounds(), tempRect)) {
-            	canMove = false;
+                isHit = true;
                 break;
             }
         }
         // If they are hit then adjust the users health.
-        if (canMove) { // If they can move, update.
+        if (isHit) {
+            character.hit(currentDelta);
+        } else if (canMove) { // If they can move, update.
             if (keys.get(Keys.LEFT)) {
                 character.getVelocity().x = -Character.SPEED;
             }
@@ -141,18 +150,28 @@ public class WorldController {
             if (keys.get(Keys.JUMP)) {
                 character.getVelocity().y = Character.JUMP_VELOCITY;
             }
+        } else { // If they can't move, they hit something and should bounce back.
+            if (keys.get(Keys.LEFT)) {
+                character.getVelocity().x = Character.SPEED;
+            }
+            if (keys.get(Keys.RIGHT)) {
+                character.getVelocity().x = -Character.SPEED;
+            }
+            if (keys.get(Keys.JUMP)) {
+                character.getVelocity().y = -Character.JUMP_VELOCITY;
+            }
         }
     }
 
     public void collisionDetectionFlamers(Flamer flamer) {
-    	// Store the characters x and y position.
+        // Store the characters x and y position.
         float x = flamer.getPosition().x;
         float y = flamer.getPosition().y;
         // Horizontal-right
         if (flamer.facingLeft) {
             x = (float) (x - 0.05);
         } else {
-        	x = (float) (x + 0.05);
+            x = (float) (x + 0.05);
         }
         Rectangle tempRect = new Rectangle(x, y, Flamer.WIDTH, Flamer.HEIGHT);
         // Boolean to store if the flamer can move.
@@ -166,24 +185,24 @@ public class WorldController {
         }
         // Check he does not hit the end of the screen horizontally.
         if (tempRect.x < 0) {
-        	canMove = false;
+            canMove = false;
         }
         // If they can move, update.
         if (canMove) {
-        	if (flamer.facingLeft) {
-        		flamer.getVelocity().x = -Flamer.SPEED;
+            if (flamer.facingLeft) {
+                flamer.getVelocity().x = -Flamer.SPEED;
             } else {
-            	flamer.getVelocity().x = Flamer.SPEED;
+                flamer.getVelocity().x = Flamer.SPEED;
             }
         } else {
-        	// Change the direction he is facing.
-        	if (flamer.facingLeft) {
-        		flamer.facingLeft = false;
-        	} else {
-        		flamer.facingLeft = true;
-        	}
-        	flamer.getVelocity().x = 0;
-        	flamer.getVelocity().y = 0;
+            // Change the direction he is facing.
+            if (flamer.facingLeft) {
+                flamer.facingLeft = false;
+            } else {
+                flamer.facingLeft = true;
+            }
+            flamer.getVelocity().x = 0;
+            flamer.getVelocity().y = 0;
         }
     }
 

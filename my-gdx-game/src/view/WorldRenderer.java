@@ -82,7 +82,7 @@ public class WorldRenderer {
 
     private void drawBlocks() {
         for (Block block : world.getBlocks()) {
-            spriteBatch.draw(blockTexture, block.getPosition().x * ppuX, block.getPosition().y * ppuY, block.getWidth() * ppuX, block.getHeight() * ppuY);
+            spriteBatch.draw(blockTexture, block.getPosition().x * ppuX, block.getPosition().y * ppuY, Block.SIZE * ppuX, Block.SIZE * ppuY);
         }
     }
 

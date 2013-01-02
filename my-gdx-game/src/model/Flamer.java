@@ -34,8 +34,8 @@ public class Flamer {
     }
 
     public Rectangle getBounds() {
-    	Rectangle bounds = new Rectangle();
-    	bounds.width = WIDTH;
+        Rectangle bounds = new Rectangle();
+        bounds.width = WIDTH;
         bounds.height = HEIGHT;
         bounds.x = position.x;
         bounds.y = position.y;
@@ -78,10 +78,10 @@ public class Flamer {
     }
 
     public String getFlamerImage() {
-    	if (this.facingLeft) {
-    		return "flame_guy_left";
-    	} else {
-    		return "flame_guy_right";
-    	}
+        if (this.facingLeft) {
+            return "flame_guy_left";
+        } else {
+            return "flame_guy_right";
+        }
     }
 }
