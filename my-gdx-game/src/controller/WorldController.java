@@ -139,7 +139,10 @@ public class WorldController {
         }
         // If they are hit then adjust the users health.
         if (isHit) {
-            character.hit(currentDelta);
+            // If the character was hit more than 2 seconds ago, register it.
+            if (character.timeSinceHit > 2) {
+                character.hit();
+            }
         } else if (canMove) { // If they can move, update.
             if (keys.get(Keys.LEFT)) {
                 character.getVelocity().x = -Character.SPEED;

@@ -17,7 +17,7 @@ public class Character {
     public static final float WIDTH = 0.5f;
 
     public boolean won = false;
-    public float lastTimeHit = 0;
+    public float timeSinceHit = 0;
     public int health = 3;
     public boolean isdead = false;
     public boolean shooting = false;
@@ -58,6 +58,7 @@ public class Character {
 
     public void update(float delta) {
         position.add(velocity.tmp().mul(delta));
+        timeSinceHit += delta;
     }
 
     public Boolean isFalling() {
@@ -68,11 +69,12 @@ public class Character {
         return shooting;
     }
 
-    public void hit(float delta) {
+    public void hit() {
         if (health >= 0){
             health--;
         }
-        lastTimeHit = delta;
+        // Reset the count.
+        timeSinceHit = 0;
     }
 
     public int getHealth() {

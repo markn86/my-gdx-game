@@ -3,36 +3,32 @@ package view;
 import java.util.HashMap;
 import java.util.Map;
 
-import model.Flamer;
-import model.InteractiveImage;
 import model.Block;
 import model.Character;
+import model.Flamer;
+import model.InteractiveImage;
 import model.World;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-
-import controller.WorldController;
 
 public class WorldRenderer {
 
     public static final float CAMERA_WIDTH = 10f;
     public static final float CAMERA_HEIGHT = 7f;
 
-    private World world;
-    private OrthographicCamera cam;
-
-    ShapeRenderer debugRenderer = new ShapeRenderer();
+    private final World world;
+    private final OrthographicCamera cam;
 
     // Textures.
     private Texture blockTexture;
-    private Map<String, Texture> flamerTextures;
-    private Map<String, Texture> characterTextures;
+    private final Map<String, Texture> flamerTextures;
+    private final Map<String, Texture> characterTextures;
+    private final Map<String, Texture> heartTextures;
 
-    private SpriteBatch spriteBatch;
+    private final SpriteBatch spriteBatch;
     private int width;
     private int height;
     private float ppuX; // Pixels per unit on the X axis.
@@ -46,6 +42,7 @@ public class WorldRenderer {
         spriteBatch = new SpriteBatch();
         characterTextures = new HashMap<String, Texture>();
         flamerTextures = new HashMap<String, Texture>();
+        heartTextures = new HashMap<String, Texture>();
         loadTextures();
     }
 
@@ -59,16 +56,20 @@ public class WorldRenderer {
         // Block textures.
         blockTexture = new Texture(Gdx.files.internal("images/block2.png"));
 
-        // Flamer Guy texture
+        // Flamer Guy texture.
         flamerTextures.put("flame_guy_left", new Texture(Gdx.files.internal("images/flame_guy_left.png")));
         flamerTextures.put("flame_guy_right", new Texture(Gdx.files.internal("images/flame_guy_right.png")));
+
+        // Heart textures.
+        heartTextures.put("full", new Texture(Gdx.files.internal("images/heart.png")));
+        heartTextures.put("empty", new Texture(Gdx.files.internal("images/empty_heart.png")));
     }
 
     public void setSize(int w, int h) {
         this.width = w;
         this.height = h;
-        ppuX = (float) width / CAMERA_WIDTH;
-        ppuY = (float) height / CAMERA_HEIGHT;
+        ppuX = width / CAMERA_WIDTH;
+        ppuY = height / CAMERA_HEIGHT;
     }
 
     public void render() {
@@ -77,6 +78,7 @@ public class WorldRenderer {
         drawInteractiveImages();
         drawCharacter();
         drawFlamers();
+        drawHearts();
         spriteBatch.end();
     }
 
@@ -88,13 +90,13 @@ public class WorldRenderer {
 
     private void drawInteractiveImages() {
         InteractiveImage image = world.getInteractiveImage("leftArrow");
-        spriteBatch.draw(image.getTexture(), image.getPosition().x * ppuX, image.getPosition().y * ppuY, image.getWidth() * ppuX, image.getHeight() * ppuY);
+        spriteBatch.draw(image.getTexture(), image.getPosition().x * ppuX, image.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
 
         image = world.getInteractiveImage("rightArrow");
-        spriteBatch.draw(image.getTexture(), image.getPosition().x * ppuX, image.getPosition().y * ppuY, image.getWidth() * ppuX, image.getHeight() * ppuY);
+        spriteBatch.draw(image.getTexture(), image.getPosition().x * ppuX, image.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
 
         image = world.getInteractiveImage("jumpIcon");
-        spriteBatch.draw(image.getTexture(), image.getPosition().x * ppuX, image.getPosition().y * ppuY, image.getWidth() * ppuX, image.getHeight() * ppuY);
+        spriteBatch.draw(image.getTexture(), image.getPosition().x * ppuX, image.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
     }
 
     private void drawCharacter() {
@@ -105,6 +107,20 @@ public class WorldRenderer {
     private void drawFlamers() {
         for (Flamer flamer : world.getFlamers()) {
             spriteBatch.draw(flamerTextures.get(flamer.getFlamerImage()), flamer.getPosition().x * ppuX, flamer.getPosition().y * ppuY, Flamer.WIDTH * ppuX, Flamer.HEIGHT * ppuY);
+        }
+    }
+
+    private void drawHearts() {
+        // Get the characters health.
+        Character character = world.getCharacter();
+        int health = character.getHealth();
+        // Draw the full hearts.
+        for (int i = 0; i < health; i++) {
+            spriteBatch.draw(heartTextures.get("full"), (i * 0.5f) * ppuX, 6.2f * ppuY, 0.5f * ppuX, 0.5f * ppuY);
+        }
+        // Now draw empty hearts.
+        for (int i = health; i < 3; i++) {
+            spriteBatch.draw(heartTextures.get("empty"), (i * 0.5f) * ppuX, 6.2f * ppuY, 0.5f * ppuX, 0.5f * ppuY);
         }
     }
 }
