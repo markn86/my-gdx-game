@@ -7,6 +7,7 @@ import lib.OverlapTester;
 import model.Block;
 import model.Character;
 import model.Character.State;
+import model.Flamer;
 import model.World;
 
 import com.badlogic.gdx.math.Rectangle;
@@ -35,10 +36,15 @@ public class WorldController {
     }
 
     public void update(float delta) {
+        // Begin the gaming process.
         processInput();
         gravityDetection();
-        collisionDetectionBlocks();
+        collisionDetection();
         character.update(delta);
+        for (Flamer flamer : world.getFlamers()) {
+        	collisionDetectionFlamers(flamer);
+        	flamer.update(delta);
+        }
     }
 
     private void processInput() {
@@ -61,8 +67,6 @@ public class WorldController {
             if ((keys.get(Keys.LEFT) && keys.get(Keys.RIGHT)) ||
                     (!keys.get(Keys.LEFT) && !(keys.get(Keys.RIGHT)))) {
                 character.setState(State.IDLE);
-                // Acceleration is 0 on the x
-                character.getAcceleration().x = 0;
                 // Horizontal speed is 0
                 character.getVelocity().x = 0;
             }
@@ -93,7 +97,8 @@ public class WorldController {
         }
     }
 
-    private void collisionDetectionBlocks() {
+    private void collisionDetection() {
+    	// Store the characters x and y position.
         float x = character.getPosition().x;
         float y = character.getPosition().y;
         // Horizontal-left
@@ -118,8 +123,15 @@ public class WorldController {
                 break;
             }
         }
-        // If they can move, update.
-        if (canMove) {
+        // Loop through the flamers.
+        for (Flamer block : world.getFlamers()) {
+            if (OverlapTester.overlapRectangles(block.getBounds(), tempRect)) {
+            	canMove = false;
+                break;
+            }
+        }
+        // If they are hit then adjust the users health.
+        if (canMove) { // If they can move, update.
             if (keys.get(Keys.LEFT)) {
                 character.getVelocity().x = -Character.SPEED;
             }
@@ -129,9 +141,49 @@ public class WorldController {
             if (keys.get(Keys.JUMP)) {
                 character.getVelocity().y = Character.JUMP_VELOCITY;
             }
+        }
+    }
+
+    public void collisionDetectionFlamers(Flamer flamer) {
+    	// Store the characters x and y position.
+        float x = flamer.getPosition().x;
+        float y = flamer.getPosition().y;
+        // Horizontal-right
+        if (flamer.facingLeft) {
+            x = (float) (x - 0.05);
         } else {
-            character.getVelocity().x = 0;
-            character.getVelocity().y = 0;
+        	x = (float) (x + 0.05);
+        }
+        Rectangle tempRect = new Rectangle(x, y, Flamer.WIDTH, Flamer.HEIGHT);
+        // Boolean to store if the flamer can move.
+        boolean canMove = true;
+        // Loop through the blocks.
+        for (Block block : world.getBlocks()) {
+            if (OverlapTester.overlapRectangles(block.getBounds(), tempRect)) {
+                canMove = false;
+                break;
+            }
+        }
+        // Check he does not hit the end of the screen horizontally.
+        if (tempRect.x < 0) {
+        	canMove = false;
+        }
+        // If they can move, update.
+        if (canMove) {
+        	if (flamer.facingLeft) {
+        		flamer.getVelocity().x = -Flamer.SPEED;
+            } else {
+            	flamer.getVelocity().x = Flamer.SPEED;
+            }
+        } else {
+        	// Change the direction he is facing.
+        	if (flamer.facingLeft) {
+        		flamer.facingLeft = false;
+        	} else {
+        		flamer.facingLeft = true;
+        	}
+        	flamer.getVelocity().x = 0;
+        	flamer.getVelocity().y = 0;
         }
     }
 

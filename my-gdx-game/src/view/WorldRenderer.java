@@ -3,6 +3,7 @@ package view;
 import java.util.HashMap;
 import java.util.Map;
 
+import model.Flamer;
 import model.InteractiveImage;
 import model.Block;
 import model.Character;
@@ -13,6 +14,8 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
+import controller.WorldController;
 
 public class WorldRenderer {
 
@@ -25,8 +28,9 @@ public class WorldRenderer {
     ShapeRenderer debugRenderer = new ShapeRenderer();
 
     // Textures.
-    private Map<String, Texture> characterTextures;
     private Texture blockTexture;
+    private Map<String, Texture> flamerTextures;
+    private Map<String, Texture> characterTextures;
 
     private SpriteBatch spriteBatch;
     private int width;
@@ -41,6 +45,7 @@ public class WorldRenderer {
         this.cam.update();
         spriteBatch = new SpriteBatch();
         characterTextures = new HashMap<String, Texture>();
+        flamerTextures = new HashMap<String, Texture>();
         loadTextures();
     }
 
@@ -53,6 +58,10 @@ public class WorldRenderer {
 
         // Block textures.
         blockTexture = new Texture(Gdx.files.internal("images/block2.png"));
+
+        // Flamer Guy texture
+        flamerTextures.put("flame_guy_left", new Texture(Gdx.files.internal("images/flame_guy_left.png")));
+        flamerTextures.put("flame_guy_right", new Texture(Gdx.files.internal("images/flame_guy_right.png")));
     }
 
     public void setSize(int w, int h) {
@@ -67,6 +76,7 @@ public class WorldRenderer {
         drawBlocks();
         drawInteractiveImages();
         drawCharacter();
+        drawFlamers();
         spriteBatch.end();
     }
 
@@ -90,5 +100,11 @@ public class WorldRenderer {
     private void drawCharacter() {
         Character character = world.getCharacter();
         spriteBatch.draw(characterTextures.get(character.getCharacterImage()), character.getPosition().x * ppuX, character.getPosition().y * ppuY, Character.WIDTH * ppuX, Character.HEIGHT * ppuY);
+    }
+
+    private void drawFlamers() {
+        for (Flamer flamer : world.getFlamers()) {
+            spriteBatch.draw(flamerTextures.get(flamer.getFlamerImage()), flamer.getPosition().x * ppuX, flamer.getPosition().y * ppuY, Flamer.WIDTH * ppuX, Flamer.HEIGHT * ppuY);
+        }
     }
 }

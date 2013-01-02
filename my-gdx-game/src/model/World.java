@@ -18,12 +18,16 @@ public class World {
     // The character.
     Character character;
 
+    // The flamer enemies
+    Array<Flamer> flamers = new Array<Flamer>();
+
     public World() {
         createFirstWorld();
     }
 
     public void createFirstWorld() {
         character = new Character(new Vector2(7, 2));
+        flamers.add(new Flamer(new Vector2(1, 1)));
 
         for (int i = 0; i < 10; i++) {
             blocks.add(new Block(new Vector2(i, 0)));
@@ -51,6 +55,10 @@ public class World {
 
     public Character getCharacter() {
         return this.character;
+    }
+
+    public Array<Flamer> getFlamers() {
+        return this.flamers;
     }
 
     public InteractiveImage getInteractiveImage(String name) {
