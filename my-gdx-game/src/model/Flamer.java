@@ -15,6 +15,7 @@ public class Flamer {
 
     public boolean won = false;
     public int health = 3;
+    public float timeSinceHit = 0;
     public boolean isdead = false;
     public boolean shooting = false;
 
@@ -53,6 +54,7 @@ public class Flamer {
 
     public void update(float delta) {
         position.add(velocity.tmp().mul(delta));
+        timeSinceHit += delta;
     }
 
     public boolean isShooting() {
@@ -63,14 +65,16 @@ public class Flamer {
         if (health >= 0){
             health--;
         }
+        // Reset the counter.
+        timeSinceHit = 0;
     }
 
-    public int getHealth() {
-        return health;
-    }
+    public boolean isDead() {
+        if (health <= 0) {
+            return true;
+        }
 
-    public void isDead(boolean isdead) {
-        this.isdead = isdead;
+        return false;
     }
 
     public void setPosition(Vector2 position) {

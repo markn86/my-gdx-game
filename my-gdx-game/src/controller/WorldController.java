@@ -5,17 +5,19 @@ import java.util.Map;
 
 import lib.OverlapTester;
 import model.Block;
+import model.Bullet;
 import model.Character;
 import model.Character.State;
 import model.Flamer;
 import model.World;
 
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
 
 public class WorldController {
 
     enum Keys {
-        LEFT, RIGHT, JUMP, FIRE
+        LEFT, RIGHT, JUMP
     }
 
     private final World world;
@@ -30,7 +32,6 @@ public class WorldController {
         keys.put(Keys.LEFT, false);
         keys.put(Keys.RIGHT, false);
         keys.put(Keys.JUMP, false);
-        keys.put(Keys.FIRE, false);
     }
 
     public WorldController(World world) {
@@ -44,11 +45,28 @@ public class WorldController {
         // Begin the gaming process.
         processInput();
         gravityDetection();
-        collisionDetection();
+        collisionCharBlock();
+        collisionCharFlamer();
         character.update(delta);
-        for (Flamer flamer : world.getFlamers()) {
-            collisionDetectionFlamers(flamer);
-            flamer.update(delta);
+        // Loop through flamers and remove them if they are dead.
+        Array<Flamer> arrFlamers = world.getFlamers();
+        for (int i = 0; i < arrFlamers.size; i++) {
+            collisionFlamerBlock(arrFlamers.get(i));
+            collisionFlamerBullet(arrFlamers.get(i));
+            if (arrFlamers.get(i).isDead()) {
+                arrFlamers.removeIndex(i);
+            } else {
+                arrFlamers.get(i).update(delta);
+            }
+        }
+        // Loop through bullets and remove them if they hit a block.
+        Array<Bullet> arrBullets = world.getBullets();
+        for (int i = 0; i < arrBullets.size; i++) {
+            if (collisionBulletBlock(arrBullets.get(i))) {
+                arrBullets.removeIndex(i);
+            } else {
+                arrBullets.get(i).update(delta);
+            }
         }
     }
 
@@ -102,7 +120,7 @@ public class WorldController {
         }
     }
 
-    private void collisionDetection() {
+    private void collisionCharBlock() {
         // Store the characters x and y position.
         float x = character.getPosition().x;
         float y = character.getPosition().y;
@@ -121,8 +139,6 @@ public class WorldController {
         Rectangle tempRect = new Rectangle(x, y, Character.WIDTH, Character.HEIGHT);
         // Boolean to store if the user can move.
         boolean canMove = true;
-        // Boolean to store if the user has been hit.
-        boolean isHit = false;
         // Loop through the blocks.
         for (Block block : world.getBlocks()) {
             if (OverlapTester.overlapRectangles(block.getBounds(), tempRect)) {
@@ -130,20 +146,7 @@ public class WorldController {
                 break;
             }
         }
-        // Loop through the flamers.
-        for (Flamer block : world.getFlamers()) {
-            if (OverlapTester.overlapRectangles(block.getBounds(), tempRect)) {
-                isHit = true;
-                break;
-            }
-        }
-        // If they are hit then adjust the users health.
-        if (isHit) {
-            // If the character was hit more than 2 seconds ago, register it.
-            if (character.timeSinceHit > 2) {
-                character.hit();
-            }
-        } else if (canMove) { // If they can move, update.
+        if (canMove) { // If they can move, update.
             if (keys.get(Keys.LEFT)) {
                 character.getVelocity().x = -Character.SPEED;
             }
@@ -166,8 +169,43 @@ public class WorldController {
         }
     }
 
-    public void collisionDetectionFlamers(Flamer flamer) {
+    private void collisionCharFlamer() {
         // Store the characters x and y position.
+        float x = character.getPosition().x;
+        float y = character.getPosition().y;
+        // Horizontal-left
+        if (keys.get(Keys.LEFT)) {
+            x = (float) (x - 0.05);
+        }
+        // Horizontal-right
+        if (keys.get(Keys.RIGHT)) {
+            x = (float) (x + 0.05);
+        }
+        // Vertical-ceiling
+        if (keys.get(Keys.JUMP)) {
+            y = (float) (y + 0.05);
+        }
+        Rectangle tempRect = new Rectangle(x, y, Character.WIDTH, Character.HEIGHT);
+        // Boolean to store if the user has been hit.
+        boolean isHit = false;
+        // Loop through the flamers.
+        for (Flamer flamer : world.getFlamers()) {
+            if (OverlapTester.overlapRectangles(flamer.getBounds(), tempRect)) {
+                isHit = true;
+                break;
+            }
+        }
+        // If they are hit then adjust the users health.
+        if (isHit) {
+            // If the character was hit more than 2 seconds ago, register it.
+            if (character.timeSinceHit > 2) {
+                character.hit();
+            }
+        }
+    }
+
+    public void collisionFlamerBlock(Flamer flamer) {
+        // Store the flamers x and y position.
         float x = flamer.getPosition().x;
         float y = flamer.getPosition().y;
         // Horizontal-right
@@ -209,6 +247,64 @@ public class WorldController {
         }
     }
 
+    public void collisionFlamerBullet(Flamer flamer) {
+        // Store the flamers x and y position.
+        float x = flamer.getPosition().x;
+        float y = flamer.getPosition().y;
+        // Horizontal-right
+        if (flamer.facingLeft) {
+            x = (float) (x - 0.05);
+        } else {
+            x = (float) (x + 0.05);
+        }
+        Rectangle tempRect = new Rectangle(x, y, Flamer.WIDTH, Flamer.HEIGHT);
+        // Store if the flamer is hit
+        boolean isHit = false;
+        // Loop through the bullets.
+        Array<Bullet> arrBullets = world.getBullets();
+        for (int i = 0; i < arrBullets.size; i++) {
+            if (OverlapTester.overlapRectangles(arrBullets.get(i).getBounds(), tempRect)) {
+                flamer.hit();
+                isHit = true;
+                // Remove the bullet
+                arrBullets.removeIndex(i);
+                break;
+            }
+        }
+        // If they can get hit, update.
+        if (isHit) {
+            // If the character was hit more than 2 seconds ago, register it.
+            if (flamer.timeSinceHit > 2) {
+                flamer.hit();
+            }
+        }
+    }
+
+    public boolean collisionBulletBlock(Bullet bullet) {
+        // Store the characters x and y position.
+        float x = bullet.getPosition().x;
+        float y = bullet.getPosition().y;
+        // Horizontal-right
+        if (bullet.facingLeft) {
+            x = (float) (x - 0.05);
+        } else {
+            x = (float) (x + 0.05);
+        }
+        Rectangle tempRect = new Rectangle(x, y, Bullet.WIDTH, Bullet.HEIGHT);
+        // Store if the flamer is hit
+        boolean isHit = false;
+        // Loop through the bullets.
+        Array<Block> arrBlocks = world.getBlocks();
+        for (int i = 0; i < arrBlocks.size; i++) {
+            if (OverlapTester.overlapRectangles(arrBlocks.get(i).getBounds(), tempRect)) {
+                isHit = true;
+                break;
+            }
+        }
+
+        return isHit;
+    }
+
     public void leftPressed() {
         keys.put(Keys.LEFT, true);
     }
@@ -222,7 +318,7 @@ public class WorldController {
     }
 
     public void firePressed() {
-        keys.put(Keys.FIRE, true);
+        character.shootBullet();
     }
 
     public void leftReleased() {
@@ -235,9 +331,5 @@ public class WorldController {
 
     public void jumpReleased() {
         keys.put(Keys.JUMP, false);
-    }
-
-    public void fireReleased() {
-        keys.put(Keys.FIRE, false);
     }
 }

@@ -92,6 +92,7 @@ public class GameScreen implements Screen, InputProcessor {
         InteractiveImage leftArrow = world.getInteractiveImage("leftArrow");
         InteractiveImage rightArrow = world.getInteractiveImage("rightArrow");
         InteractiveImage jumpIcon = world.getInteractiveImage("jumpIcon");
+        InteractiveImage fireIcon = world.getInteractiveImage("fireIcon");
 
         float pointTouchedX = x / (width / WorldRenderer.CAMERA_WIDTH);
         float pointTouchedY = (height - y) / (height / WorldRenderer.CAMERA_HEIGHT);
@@ -108,6 +109,10 @@ public class GameScreen implements Screen, InputProcessor {
 
         if (OverlapTester.pointInRectangle(jumpIcon.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.jumpPressed();
+        }
+
+        if (OverlapTester.pointInRectangle(fireIcon.getBounds(), pointTouchedX, pointTouchedY)) {
+            controller.firePressed();
         }
 
         return true;
@@ -133,9 +138,9 @@ public class GameScreen implements Screen, InputProcessor {
         } else if (OverlapTester.pointInRectangle(jumpIcon.getBounds(), pointTouchedX, pointTouchedY)) {
             controller.jumpReleased();
         } else {
-            controller.leftReleased();
-            controller.rightReleased();
-            controller.jumpReleased();
+            // controller.leftReleased();
+            // controller.rightReleased();
+            // controller.jumpReleased();
         }
 
         return true;

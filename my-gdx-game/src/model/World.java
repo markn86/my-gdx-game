@@ -14,19 +14,23 @@ public class World {
     InteractiveImage leftArrow;
     InteractiveImage rightArrow;
     InteractiveImage jumpIcon;
+    InteractiveImage fireIcon;
 
     // The character.
     Character character;
 
-    // The flamer enemies
+    // The flamer enemies.
     Array<Flamer> flamers = new Array<Flamer>();
+
+    // The bullets.
+    Array<Bullet> bullets = new Array<Bullet>();
 
     public World() {
         createFirstWorld();
     }
 
     public void createFirstWorld() {
-        character = new Character(new Vector2(7, 2));
+        character = new Character(new Vector2(7, 2), this);
         flamers.add(new Flamer(new Vector2(1, 1)));
 
         for (int i = 0; i < 10; i++) {
@@ -61,6 +65,10 @@ public class World {
         return this.flamers;
     }
 
+    public Array<Bullet> getBullets() {
+        return this.bullets;
+    }
+
     public InteractiveImage getInteractiveImage(String name) {
         if (name == "leftArrow") {
             return leftArrow;
@@ -68,6 +76,8 @@ public class World {
             return rightArrow;
         } else if (name == "jumpIcon") {
             return jumpIcon;
+        } else if (name == "fireIcon") {
+            return fireIcon;
         }
 
         // Should never get here.
@@ -78,5 +88,10 @@ public class World {
         leftArrow = new InteractiveImage(new Texture(Gdx.files.internal("images/left_arrow.png")), new Vector2(0, 0));
         rightArrow = new InteractiveImage(new Texture(Gdx.files.internal("images/right_arrow.png")), new Vector2(1, 0));
         jumpIcon = new InteractiveImage(new Texture(Gdx.files.internal("images/jump.png")), new Vector2(8, 0));
+        fireIcon = new InteractiveImage(new Texture(Gdx.files.internal("images/fire_button.png")), new Vector2(9, 0));
+    }
+
+    public void addBullet(Bullet bullet) {
+        bullets.add(bullet);
     }
 }

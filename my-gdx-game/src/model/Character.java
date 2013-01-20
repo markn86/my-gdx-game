@@ -9,11 +9,13 @@ public class Character {
         IDLE, WALKING, JUMPING, DYING
     }
 
+    private World world;
+
     public static final float SPEED = 2f; // Units per second.
     public static final float JUMP_VELOCITY = 1f;
     public static final float FALL_VELOCITY = 1f;
     public static final float SIZE = 0.5f; // Half unit.
-    public static final float HEIGHT = 0.75f; // Half a unit
+    public static final float HEIGHT = 0.75f; // Half a unit.
     public static final float WIDTH = 0.5f;
 
     public boolean won = false;
@@ -32,7 +34,8 @@ public class Character {
     // Keep track of which image we last used to display the character.
     String characterImage = "walking_left_1";
 
-    public Character(Vector2 position) {
+    public Character(Vector2 position, World world) {
+        this.world = world;
         this.position = position;
     }
 
@@ -77,12 +80,12 @@ public class Character {
         timeSinceHit = 0;
     }
 
-    public int getHealth() {
-        return health;
-    }
+    public boolean isDead() {
+        if (health <= 0) {
+            return true;
+        }
 
-    public void isDead(boolean isdead) {
-        this.isdead = isdead;
+        return false;
     }
 
     public String getCharacterImage() {
@@ -111,6 +114,18 @@ public class Character {
         }
     }
 
+    public void shootBullet() {
+        Vector2 bulletPosition = new Vector2();
+        if (facingLeft) {
+            bulletPosition.x = this.position.x - 0.2f;
+        } else {
+            bulletPosition.x = this.position.x + 0.2f;
+        }
+        bulletPosition.y = this.position.y + 0.2f;
+        Bullet bullet = new Bullet(bulletPosition, facingLeft);
+        world.addBullet(bullet);
+    }
+
     public Rectangle getBounds() {
         Rectangle bounds = new Rectangle();
         bounds.width = SIZE;
@@ -121,3 +136,4 @@ public class Character {
         return bounds;
     }
 }
+

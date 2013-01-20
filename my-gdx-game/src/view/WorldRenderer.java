@@ -3,10 +3,11 @@ package view;
 import java.util.HashMap;
 import java.util.Map;
 
-import model.Block;
-import model.Character;
+import model.Bullet;
 import model.Flamer;
 import model.InteractiveImage;
+import model.Block;
+import model.Character;
 import model.World;
 
 import com.badlogic.gdx.Gdx;
@@ -27,6 +28,7 @@ public class WorldRenderer {
     private final Map<String, Texture> flamerTextures;
     private final Map<String, Texture> characterTextures;
     private final Map<String, Texture> heartTextures;
+    private Texture bulletTexture;
 
     private final SpriteBatch spriteBatch;
     private int width;
@@ -63,6 +65,9 @@ public class WorldRenderer {
         // Heart textures.
         heartTextures.put("full", new Texture(Gdx.files.internal("images/heart.png")));
         heartTextures.put("empty", new Texture(Gdx.files.internal("images/empty_heart.png")));
+
+        // Bullet texture.
+        bulletTexture = new Texture(Gdx.files.internal("images/bullet_orange.png"));
     }
 
     public void setSize(int w, int h) {
@@ -79,6 +84,7 @@ public class WorldRenderer {
         drawCharacter();
         drawFlamers();
         drawHearts();
+        drawBullets();
         spriteBatch.end();
     }
 
@@ -97,6 +103,9 @@ public class WorldRenderer {
 
         image = world.getInteractiveImage("jumpIcon");
         spriteBatch.draw(image.getTexture(), image.getPosition().x * ppuX, image.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
+
+        image = world.getInteractiveImage("fireIcon");
+        spriteBatch.draw(image.getTexture(), image.getPosition().x * ppuX, image.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
     }
 
     private void drawCharacter() {
@@ -113,7 +122,7 @@ public class WorldRenderer {
     private void drawHearts() {
         // Get the characters health.
         Character character = world.getCharacter();
-        int health = character.getHealth();
+        int health = character.health;
         // Draw the full hearts.
         for (int i = 0; i < health; i++) {
             spriteBatch.draw(heartTextures.get("full"), (i * 0.5f) * ppuX, 6.2f * ppuY, 0.5f * ppuX, 0.5f * ppuY);
@@ -121,6 +130,12 @@ public class WorldRenderer {
         // Now draw empty hearts.
         for (int i = health; i < 3; i++) {
             spriteBatch.draw(heartTextures.get("empty"), (i * 0.5f) * ppuX, 6.2f * ppuY, 0.5f * ppuX, 0.5f * ppuY);
+        }
+    }
+
+    private void drawBullets() {
+        for (Bullet bullet : world.getBullets()) {
+            spriteBatch.draw(bulletTexture, bullet.getPosition().x * ppuX, bullet.getPosition().y * ppuY, Bullet.WIDTH * ppuX, Bullet.HEIGHT * ppuY);
         }
     }
 }
