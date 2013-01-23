@@ -3,6 +3,7 @@ package view;
 import java.util.HashMap;
 import java.util.Map;
 
+import lib.Sound;
 import model.Bullet;
 import model.Flamer;
 import model.InteractiveImage;
@@ -46,6 +47,7 @@ public class WorldRenderer {
         flamerTextures = new HashMap<String, Texture>();
         heartTextures = new HashMap<String, Texture>();
         loadTextures();
+        Sound.load();
     }
 
     private void loadTextures() {

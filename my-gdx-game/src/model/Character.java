@@ -1,5 +1,7 @@
 package model;
 
+import lib.Sound;
+
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
@@ -117,6 +119,7 @@ public class Character {
         bulletPosition.y = this.position.y + 0.2f;
         Bullet bullet = new Bullet(bulletPosition, facingLeft);
         world.addBullet(bullet);
+        Sound.characterBullet1.play();
     }
 
     public Rectangle getBounds() {
