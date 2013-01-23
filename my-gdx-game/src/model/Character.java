@@ -18,11 +18,8 @@ public class Character {
     public static final float HEIGHT = 0.75f; // Half a unit.
     public static final float WIDTH = 0.5f;
 
-    public boolean won = false;
-    public float timeSinceHit = 0;
     public int health = 3;
-    public boolean isdead = false;
-    public boolean shooting = false;
+    public float timeSinceHit = 0;
 
     Vector2 position = new Vector2();
     Vector2 velocity = new Vector2();
@@ -66,10 +63,6 @@ public class Character {
 
     public Boolean isFalling() {
         return falling;
-    }
-
-    public boolean isShooting() {
-        return shooting;
     }
 
     public void hit() {

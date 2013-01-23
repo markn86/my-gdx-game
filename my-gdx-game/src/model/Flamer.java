@@ -13,11 +13,8 @@ public class Flamer {
     public static final float HEIGHT = 0.75f; // Half a unit
     public static final float WIDTH = 0.5f;
 
-    public boolean won = false;
     public int health = 3;
     public float timeSinceHit = 0;
-    public boolean isdead = false;
-    public boolean shooting = false;
 
     Vector2 position = new Vector2();
     Vector2 velocity = new Vector2();
@@ -55,10 +52,6 @@ public class Flamer {
     public void update(float delta) {
         position.add(velocity.tmp().mul(delta));
         timeSinceHit += delta;
-    }
-
-    public boolean isShooting() {
-        return shooting;
     }
 
     public void hit() {

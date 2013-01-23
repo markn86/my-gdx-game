@@ -71,7 +71,7 @@ public class WorldController {
     }
 
     private void processInput() {
-        if (character.isdead == false) {
+        if (character.isDead() == false) {
             if (keys.get(Keys.LEFT)) {
                 character.setFacingLeft(true);
                 character.setCharacterImage();
