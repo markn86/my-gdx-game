@@ -14,8 +14,8 @@ public class Character {
     private World world;
 
     public static final float SPEED = 2f; // Units per second.
-    public static final float JUMP_VELOCITY = 1f;
-    public static final float FALL_VELOCITY = 1f;
+    public static final float JUMP_VELOCITY = 3f;
+    public static final float GRAVITY = 3f;
     public static final float SIZE = 0.5f; // Half unit.
     public static final float HEIGHT = 0.75f; // Half a unit.
     public static final float WIDTH = 0.5f;
@@ -26,9 +26,8 @@ public class Character {
     Vector2 position = new Vector2();
     Vector2 velocity = new Vector2();
 
-    State state = State.IDLE;
+    public State state = State.IDLE;
     boolean facingLeft = true;
-    public boolean falling = false;
 
     // Keep track of which image we last used to display the character.
     String characterImage = "walking_left_1";
@@ -63,10 +62,6 @@ public class Character {
         timeSinceHit += delta;
     }
 
-    public Boolean isFalling() {
-        return falling;
-    }
-
     public void hit() {
         if (health >= 0){
             health--;
@@ -83,6 +78,10 @@ public class Character {
         return false;
     }
 
+    public boolean isJumping() {
+        return this.state == State.JUMPING;
+    }
+
     public String getCharacterImage() {
         return characterImage;
     }
@@ -92,19 +91,17 @@ public class Character {
     }
 
     public void setCharacterImage() {
-        if (state == State.WALKING) {
-            if (this.facingLeft) {
-                if (characterImage == "walking_left_1") {
-                    characterImage = "walking_left_2";
-                } else {
-                    characterImage = "walking_left_1";
-                }
+        if (this.facingLeft) {
+            if (characterImage == "walking_left_1") {
+                characterImage = "walking_left_2";
             } else {
-                if (characterImage == "walking_right_1") {
-                    characterImage = "walking_right_2";
-                } else {
-                    characterImage = "walking_right_1";
-                }
+                characterImage = "walking_left_1";
+            }
+        } else {
+            if (characterImage == "walking_right_1") {
+                characterImage = "walking_right_2";
+            } else {
+                characterImage = "walking_right_1";
             }
         }
     }

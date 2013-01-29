@@ -24,6 +24,9 @@ public class WorldRenderer {
     private final World world;
     private final OrthographicCamera cam;
 
+    // The character.
+    Character character;
+
     // Textures.
     private Texture blockTexture;
     private final Map<String, Texture> flamerTextures;
@@ -42,6 +45,7 @@ public class WorldRenderer {
         this.cam = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
         this.cam.position.set(CAMERA_WIDTH / 2f, CAMERA_HEIGHT / 2f, 0);
         this.cam.update();
+        character = world.getCharacter();
         spriteBatch = new SpriteBatch();
         characterTextures = new HashMap<String, Texture>();
         flamerTextures = new HashMap<String, Texture>();
@@ -111,7 +115,6 @@ public class WorldRenderer {
     }
 
     private void drawCharacter() {
-        Character character = world.getCharacter();
         spriteBatch.draw(characterTextures.get(character.getCharacterImage()), character.getPosition().x * ppuX, character.getPosition().y * ppuY, Character.WIDTH * ppuX, Character.HEIGHT * ppuY);
     }
 

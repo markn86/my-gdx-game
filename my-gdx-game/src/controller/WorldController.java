@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lib.OverlapTester;
+import lib.Sound;
 import model.Block;
 import model.Bullet;
 import model.Character;
@@ -26,6 +27,7 @@ public class WorldController {
 
     // Store the time we are at.
     public static float currentDelta;
+    boolean falling = true;
 
     static Map<Keys, Boolean> keys = new HashMap<WorldController.Keys, Boolean>();
     static {
@@ -75,21 +77,32 @@ public class WorldController {
             if (keys.get(Keys.LEFT)) {
                 character.setFacingLeft(true);
                 character.setCharacterImage();
-                character.setState(State.WALKING);
+                if (!character.isJumping()) {
+                    character.setState(State.WALKING);
+                }
                 character.getVelocity().x = -Character.SPEED;
             }
             if (keys.get(Keys.RIGHT)) {
                 character.setFacingLeft(false);
                 character.setCharacterImage();
-                character.setState(State.WALKING);
+                if (!character.isJumping()) {
+                    character.setState(State.WALKING);
+                }
                 character.getVelocity().x = Character.SPEED;
             }
             if (keys.get(Keys.JUMP)) {
-                character.setState(State.JUMPING);
+                if (!character.isJumping()) {
+                    Sound.characterJump.play();
+                    character.setState(State.JUMPING);
+                    character.getVelocity().y = Character.JUMP_VELOCITY;
+                    character.getPosition().y += character.getVelocity().y * currentDelta;
+                }
             }
             if ((keys.get(Keys.LEFT) && keys.get(Keys.RIGHT)) ||
                     (!keys.get(Keys.LEFT) && !(keys.get(Keys.RIGHT)))) {
-                character.setState(State.IDLE);
+                if (!character.isJumping()) {
+                    character.setState(State.IDLE);
+                }
                 // Horizontal speed is 0
                 character.getVelocity().x = 0;
             }
@@ -101,21 +114,22 @@ public class WorldController {
 
     private void gravityDetection() {
         // Assume we are falling for now.
-        character.falling = true;
+        falling = true;
         // Use this as a temp rectangle.
         Rectangle tempRect = new Rectangle(character.getPosition().x,
-                (float) (character.getPosition().y  - 0.05),
+                (float) (character.getPosition().y - 0.05),
                 Character.WIDTH,
                 Character.HEIGHT);
         for (Block block : world.getBlocks()){
             if (OverlapTester.overlapRectangles(block.getBounds(), tempRect)) {
-                character.falling = false;
+                falling = false;
                 break;
             }
         }
-        if (character.falling) {
-            character.getVelocity().y = -Character.FALL_VELOCITY;
-        } else {
+        if (falling) {
+            character.getVelocity().y -= Character.GRAVITY * currentDelta;
+        } else { // Set state back to walking as he has landed on the ground.
+            character.setState(State.WALKING);
             character.getVelocity().y = 0;
         }
     }
@@ -133,7 +147,7 @@ public class WorldController {
             x = (float) (x + 0.05);
         }
         // Vertical-ceiling
-        if (keys.get(Keys.JUMP)) {
+        if (character.isJumping()) {
             y = (float) (y + 0.05);
         }
         Rectangle tempRect = new Rectangle(x, y, Character.WIDTH, Character.HEIGHT);
@@ -146,25 +160,11 @@ public class WorldController {
                 break;
             }
         }
-        if (canMove) { // If they can move, update.
-            if (keys.get(Keys.LEFT)) {
-                character.getVelocity().x = -Character.SPEED;
-            }
-            if (keys.get(Keys.RIGHT)) {
-                character.getVelocity().x = Character.SPEED;
-            }
-            if (keys.get(Keys.JUMP)) {
-                character.getVelocity().y = Character.JUMP_VELOCITY;
-            }
-        } else { // If they can't move, they hit something and should bounce back.
-            if (keys.get(Keys.LEFT)) {
-                character.getVelocity().x = Character.SPEED;
-            }
-            if (keys.get(Keys.RIGHT)) {
-                character.getVelocity().x = -Character.SPEED;
-            }
-            if (keys.get(Keys.JUMP)) {
-                character.getVelocity().y = -Character.JUMP_VELOCITY;
+        if (!canMove) { // Can't move, set x to 0 and y to 0, unless falling.
+            character.getVelocity().x = 0;
+            character.getVelocity().y = 0;
+            if (character.isJumping()) {
+                character.getVelocity().y = -Character.GRAVITY;
             }
         }
     }
