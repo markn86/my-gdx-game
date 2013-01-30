@@ -1,7 +1,7 @@
 package model;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
+import view.WorldRenderer;
+
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
@@ -10,14 +10,8 @@ public class World {
     // Store the blocks making up the world.
     Array<Block> blocks = new Array<Block>();
 
-    // The interactive images.
-    InteractiveImage leftArrow;
-    InteractiveImage rightArrow;
-    InteractiveImage jumpIcon;
-    InteractiveImage fireIcon;
-
-    // The character.
-    Character character;
+    // The player.
+    Player player;
 
     // The flamer enemies.
     Array<Flamer> flamers = new Array<Flamer>();
@@ -25,40 +19,36 @@ public class World {
     // The bullets.
     Array<Bullet> bullets = new Array<Bullet>();
 
-    public World() {
-        createFirstWorld();
-    }
-
-    public void createFirstWorld() {
-        character = new Character(new Vector2(7, 2), this);
-        flamers.add(new Flamer(new Vector2(1, 1)));
-
-        for (int i = 0; i < 10; i++) {
-            blocks.add(new Block(new Vector2(i, 0)));
-            blocks.add(new Block(new Vector2(i, 6)));
-            if (i > 2) {
-                blocks.add(new Block(new Vector2(i, 1)));
+    public World(int w, int h, int xo, int yo, int xSpawn, int ySpawn) {
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int col = (WorldRenderer.level.getPixel(x + xo * 31, y + yo * 23) & 0xffffff00) >>> 8;
+                switch (col) {
+                    case 0x914d2a: // Brown block.
+                        blocks.add(new Block(new Vector2(x * 10, (h * 10) - (y * 10) - 10)));
+                        break;
+                    case 0x0000ff: // The player.
+                        // Only change this if player is not currently being rendered.
+                        if (xSpawn == 0 && ySpawn == 0) {
+                            xSpawn = x * 10;
+                            ySpawn = (h * 10) - (y * 10);
+                        }
+                        break;
+                    case 0x5f5f5f: // The flamer.
+                        flamers.add(new Flamer(new Vector2(x * 10, (h * 10) - (y * 10))));
+                        break;
+                }
             }
         }
-
-        blocks.add(new Block(new Vector2(9, 2)));
-        blocks.add(new Block(new Vector2(9, 3)));
-        blocks.add(new Block(new Vector2(9, 4)));
-        blocks.add(new Block(new Vector2(9, 5)));
-
-        blocks.add(new Block(new Vector2(6, 3)));
-        blocks.add(new Block(new Vector2(6, 4)));
-        blocks.add(new Block(new Vector2(6, 5)));
-
-        addInteractiveImages();
+        player = new Player(new Vector2(xSpawn, ySpawn), this);
     }
 
     public Array<Block> getBlocks() {
         return this.blocks;
     }
 
-    public Character getCharacter() {
-        return this.character;
+    public Player getPlayer() {
+        return this.player;
     }
 
     public Array<Flamer> getFlamers() {
@@ -67,28 +57,6 @@ public class World {
 
     public Array<Bullet> getBullets() {
         return this.bullets;
-    }
-
-    public InteractiveImage getInteractiveImage(String name) {
-        if (name == "leftArrow") {
-            return leftArrow;
-        } else if (name == "rightArrow") {
-            return rightArrow;
-        } else if (name == "jumpIcon") {
-            return jumpIcon;
-        } else if (name == "fireIcon") {
-            return fireIcon;
-        }
-
-        // Should never get here.
-        return rightArrow;
-    }
-
-    private void addInteractiveImages() {
-        leftArrow = new InteractiveImage(new Texture(Gdx.files.internal("images/left_arrow.png")), new Vector2(0, 0));
-        rightArrow = new InteractiveImage(new Texture(Gdx.files.internal("images/right_arrow.png")), new Vector2(1, 0));
-        jumpIcon = new InteractiveImage(new Texture(Gdx.files.internal("images/jump.png")), new Vector2(8, 0));
-        fireIcon = new InteractiveImage(new Texture(Gdx.files.internal("images/fire_button.png")), new Vector2(9, 0));
     }
 
     public void addBullet(Bullet bullet) {

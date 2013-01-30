@@ -9,9 +9,9 @@ public class Flamer {
         IDLE, WALKING, JUMPING, DYING
     }
 
-    public static final float SPEED = 1f; // Units per second.
-    public static final float HEIGHT = 0.75f; // Half a unit
-    public static final float WIDTH = 0.5f;
+    public static final float SPEED = 20f; // Units per second.
+    public static final float WIDTH = 15f;
+    public static final float HEIGHT = 25f;
 
     public int health = 3;
     public float timeSinceHit = 0;

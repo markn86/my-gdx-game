@@ -5,7 +5,7 @@ import lib.Sound;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
-public class Character {
+public class Player {
 
     public enum State {
         IDLE, WALKING, JUMPING, DYING
@@ -13,15 +13,15 @@ public class Character {
 
     private World world;
 
-    public static final float SPEED = 2f; // Units per second.
-    public static final float JUMP_VELOCITY = 3f;
-    public static final float GRAVITY = 3f;
-    public static final float SIZE = 0.5f; // Half unit.
-    public static final float HEIGHT = 0.75f; // Half a unit.
-    public static final float WIDTH = 0.5f;
+    public static final float SPEED = 60f; // Units per second.
+    public static final float JUMP_VELOCITY = 70f;
+    public static final float GRAVITY = 70f;
+    public static final float WIDTH = 15f;
+    public static final float HEIGHT = 25f;
 
     public int health = 3;
     public float timeSinceHit = 2;
+    public float timeSinceLastShot = 0;
 
     Vector2 position = new Vector2();
     Vector2 velocity = new Vector2();
@@ -29,10 +29,10 @@ public class Character {
     public State state = State.IDLE;
     boolean facingLeft = true;
 
-    // Keep track of which image we last used to display the character.
-    String characterImage = "walking_left_1";
+    // Keep track of which image we last used to display the player.
+    String playerImage = "walking_left_1";
 
-    public Character(Vector2 position, World world) {
+    public Player(Vector2 position, World world) {
         this.world = world;
         this.position = position;
     }
@@ -60,6 +60,7 @@ public class Character {
     public void update(float delta) {
         position.add(velocity.tmp().mul(delta));
         timeSinceHit += delta;
+        timeSinceLastShot += delta;
     }
 
     public void hit() {
@@ -82,47 +83,52 @@ public class Character {
         return this.state == State.JUMPING;
     }
 
-    public String getCharacterImage() {
-        return characterImage;
+    public String getPlayerImage() {
+        return playerImage;
     }
 
     public void setPosition(Vector2 position) {
         this.position = position;
     }
 
-    public void setCharacterImage() {
+    public void setPlayerImage() {
         if (this.facingLeft) {
-            if (characterImage == "walking_left_1") {
-                characterImage = "walking_left_2";
+            if (playerImage == "walking_left_1") {
+                playerImage = "walking_left_2";
             } else {
-                characterImage = "walking_left_1";
+                playerImage = "walking_left_1";
             }
         } else {
-            if (characterImage == "walking_right_1") {
-                characterImage = "walking_right_2";
+            if (playerImage == "walking_right_1") {
+                playerImage = "walking_right_2";
             } else {
-                characterImage = "walking_right_1";
+                playerImage = "walking_right_1";
             }
         }
     }
 
     public void shootBullet() {
+        // Can only shoot the bullet once every second.
+        if (timeSinceLastShot < 1) {
+            return;
+        }
+        timeSinceLastShot = 0;
         Vector2 bulletPosition = new Vector2();
         if (facingLeft) {
-            bulletPosition.x = this.position.x - 0.2f;
+            bulletPosition.x = this.position.x - 2f;
         } else {
-            bulletPosition.x = this.position.x + 0.2f;
+            bulletPosition.x = this.position.x + 2f;
         }
-        bulletPosition.y = this.position.y + 0.2f;
+        bulletPosition.y = this.position.y + 6f;
         Bullet bullet = new Bullet(bulletPosition, facingLeft);
         world.addBullet(bullet);
-        Sound.characterBullet1.play();
+        Sound.playerBullet.play();
     }
 
     public Rectangle getBounds() {
         Rectangle bounds = new Rectangle();
-        bounds.width = SIZE;
-        bounds.height = SIZE;
+        bounds.width = WIDTH;
+        bounds.height = HEIGHT;
         bounds.x = position.x;
         bounds.y = position.y;
 

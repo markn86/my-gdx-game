@@ -3,39 +3,46 @@ package view;
 import java.util.HashMap;
 import java.util.Map;
 
+import screens.GameScreen;
+
 import lib.Sound;
 import model.Bullet;
 import model.Flamer;
-import model.InteractiveImage;
 import model.Block;
-import model.Character;
+import model.Player;
 import model.World;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import controller.WorldController;
+
 public class WorldRenderer {
 
-    public static final float CAMERA_WIDTH = 10f;
-    public static final float CAMERA_HEIGHT = 7f;
+    // The world.
+    private World world;
 
-    private final World world;
-    private final OrthographicCamera cam;
+    // The controller.
+    private WorldController controller;
 
-    // The character.
-    Character character;
+    // The player.
+    Player player;
+
+    // The world the player will be playing in.
+    public static Pixmap level = new Pixmap(Gdx.files.internal("images/levels.png"));
 
     // Textures.
     private Texture blockTexture;
-    private final Map<String, Texture> flamerTextures;
-    private final Map<String, Texture> characterTextures;
-    private final Map<String, Texture> heartTextures;
+    public static Map<String, Texture> interactiveTextures;
+    public static Map<String, Texture> flamerTextures;
+    public static Map<String, Texture> playerTextures;
+    public static Map<String, Texture> heartTextures;
     private Texture bulletTexture;
 
-    private final SpriteBatch spriteBatch;
+    public static SpriteBatch spriteBatch;
     private int width;
     private int height;
     private float ppuX; // Pixels per unit on the X axis.
@@ -43,27 +50,27 @@ public class WorldRenderer {
 
     public WorldRenderer(World world) {
         this.world = world;
-        this.cam = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
-        this.cam.position.set(CAMERA_WIDTH / 2f, CAMERA_HEIGHT / 2f, 0);
-        this.cam.update();
-        character = world.getCharacter();
+        controller = new WorldController(world);
+
+        player = world.getPlayer();
         spriteBatch = new SpriteBatch();
-        characterTextures = new HashMap<String, Texture>();
+        playerTextures = new HashMap<String, Texture>();
         flamerTextures = new HashMap<String, Texture>();
+        interactiveTextures = new HashMap<String, Texture>();
         heartTextures = new HashMap<String, Texture>();
         loadTextures();
         Sound.load();
     }
 
     private void loadTextures() {
-        // Store character textures.
-        characterTextures.put("walking_left_1", new Texture(Gdx.files.internal("images/wizard_01_left.png")));
-        characterTextures.put("walking_left_2", new Texture(Gdx.files.internal("images/wizard_02_left.png")));
-        characterTextures.put("walking_right_1", new Texture(Gdx.files.internal("images/wizard_01_right.png")));
-        characterTextures.put("walking_right_2", new Texture(Gdx.files.internal("images/wizard_02_right.png")));
+        // Store player textures.
+        playerTextures.put("walking_left_1", new Texture(Gdx.files.internal("images/wizard_01_left.png")));
+        playerTextures.put("walking_left_2", new Texture(Gdx.files.internal("images/wizard_02_left.png")));
+        playerTextures.put("walking_right_1", new Texture(Gdx.files.internal("images/wizard_01_right.png")));
+        playerTextures.put("walking_right_2", new Texture(Gdx.files.internal("images/wizard_02_right.png")));
 
         // Block textures.
-        blockTexture = new Texture(Gdx.files.internal("images/block2.png"));
+        blockTexture = new Texture(Gdx.files.internal("images/brown_block.png"));
 
         // Flamer Guy texture.
         flamerTextures.put("flame_guy_left", new Texture(Gdx.files.internal("images/flame_guy_left.png")));
@@ -73,6 +80,12 @@ public class WorldRenderer {
         heartTextures.put("full", new Texture(Gdx.files.internal("images/heart.png")));
         heartTextures.put("empty", new Texture(Gdx.files.internal("images/empty_heart.png")));
 
+        // Interactive Image textures.
+        interactiveTextures.put("left_arrow", new Texture(Gdx.files.internal("images/left_arrow.png")));
+        interactiveTextures.put("right_arrow", new Texture(Gdx.files.internal("images/right_arrow.png")));
+        interactiveTextures.put("jump", new Texture(Gdx.files.internal("images/jump.png")));
+        interactiveTextures.put("fire", new Texture(Gdx.files.internal("images/fire_button.png")));
+
         // Bullet texture.
         bulletTexture = new Texture(Gdx.files.internal("images/bullet_orange.png"));
     }
@@ -80,77 +93,81 @@ public class WorldRenderer {
     public void setSize(int w, int h) {
         this.width = w;
         this.height = h;
-        ppuX = width / CAMERA_WIDTH;
-        ppuY = height / CAMERA_HEIGHT;
+        ppuX = width / GameScreen.CAMERA_WIDTH;
+        ppuY = height / GameScreen.CAMERA_HEIGHT;
     }
 
-    public void render() {
-        spriteBatch.begin();
-        drawBlocks();
-        drawInteractiveImages();
-        drawCharacter();
-        drawFlamers();
-        drawHearts();
-        drawBullets();
-        spriteBatch.end();
+    public void render(float delta) {
+        // Update the position of everything.
+        controller.update(delta);
+
+        // Draw the elements.
+        drawBlocks(world);
+        drawPlayer(world);
+        drawFlamers(world);
+        drawBullets(world);
+
+        // Check here if we need to start transition between screens.
+        float x = player.getPosition().x;
+        float y = player.getPosition().y;
+        float w = Player.WIDTH;
+        float h = Player.HEIGHT;
+
+        if (y < 5) {
+            this.transition(0, -1);
+        }
+        if (y > GameScreen.CAMERA_HEIGHT - w + 5) {
+            this.transition(0, 1);
+        }
+        if (x < 5) {
+            this.transition(-1, 0);
+        }
+        if (x > GameScreen.CAMERA_WIDTH - h + 5) {
+            this.transition(1, 0);
+        }
     }
 
-    private void drawBlocks() {
+    public void transition(int xa, int ya) {
+        player.getPosition().x -= xa * GameScreen.CAMERA_WIDTH;
+        player.getPosition().y -= ya * GameScreen.CAMERA_HEIGHT;
+
+        if (ya != 0) {
+            player.getPosition().y -= 10;
+        }
+
+        world = new World(32, 24, xa, ya, (int) player.getPosition().x, (int) (player.getPosition().y + ya * 5));
+        player = world.getPlayer();
+        controller = new WorldController(world);
+    }
+
+    private void drawBlocks(World world) {
         for (Block block : world.getBlocks()) {
             spriteBatch.draw(blockTexture, block.getPosition().x * ppuX, block.getPosition().y * ppuY, Block.SIZE * ppuX, Block.SIZE * ppuY);
         }
     }
 
-    private void drawInteractiveImages() {
-        InteractiveImage image = world.getInteractiveImage("leftArrow");
-        spriteBatch.draw(image.getTexture(), image.getPosition().x * ppuX, image.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
-
-        image = world.getInteractiveImage("rightArrow");
-        spriteBatch.draw(image.getTexture(), image.getPosition().x * ppuX, image.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
-
-        image = world.getInteractiveImage("jumpIcon");
-        spriteBatch.draw(image.getTexture(), image.getPosition().x * ppuX, image.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
-
-        image = world.getInteractiveImage("fireIcon");
-        spriteBatch.draw(image.getTexture(), image.getPosition().x * ppuX, image.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
-    }
-
-    private void drawCharacter() {
+    private void drawPlayer(World world) {
         // Get the texture.
-        Texture texture = characterTextures.get(character.getCharacterImage());
+        Texture texture = playerTextures.get(player.getPlayerImage());
         Color c = spriteBatch.getColor();
         // If they have been hit we want to flash their image.
-        if (character.timeSinceHit < 2) {
+        if (player.timeSinceHit < 2) {
             if (Math.sin((double) System.currentTimeMillis()) > 0) {
-                // Make image semi transparent.
-                spriteBatch.setColor(c.r, c.g, c.b, .3f); // set alpha to 0.3
+                // Set alpha to 0.3.
+                spriteBatch.setColor(c.r, c.g, c.b, .3f);
             }
         }
-        spriteBatch.draw(texture, character.getPosition().x * ppuX, character.getPosition().y * ppuY, Character.WIDTH * ppuX, Character.HEIGHT * ppuY);
+        spriteBatch.draw(texture, player.getPosition().x * ppuX, player.getPosition().y * ppuY, Player.WIDTH * ppuX, Player.HEIGHT * ppuY);
         spriteBatch.setColor(c.r, c.g, c.b, 1f);
     }
 
-    private void drawFlamers() {
+    private void drawFlamers(World world) {
         for (Flamer flamer : world.getFlamers()) {
             spriteBatch.draw(flamerTextures.get(flamer.getFlamerImage()), flamer.getPosition().x * ppuX, flamer.getPosition().y * ppuY, Flamer.WIDTH * ppuX, Flamer.HEIGHT * ppuY);
         }
     }
 
-    private void drawHearts() {
-        // Get the characters health.
-        Character character = world.getCharacter();
-        int health = character.health;
-        // Draw the full hearts.
-        for (int i = 0; i < health; i++) {
-            spriteBatch.draw(heartTextures.get("full"), (i * 0.5f) * ppuX, 6.2f * ppuY, 0.5f * ppuX, 0.5f * ppuY);
-        }
-        // Now draw empty hearts.
-        for (int i = health; i < 3; i++) {
-            spriteBatch.draw(heartTextures.get("empty"), (i * 0.5f) * ppuX, 6.2f * ppuY, 0.5f * ppuX, 0.5f * ppuY);
-        }
-    }
-
-    private void drawBullets() {
+    private void drawBullets(World world) {
         for (Bullet bullet : world.getBullets()) {
             spriteBatch.draw(bulletTexture, bullet.getPosition().x * ppuX, bullet.getPosition().y * ppuY, Bullet.WIDTH * ppuX, Bullet.HEIGHT * ppuY);
         }
