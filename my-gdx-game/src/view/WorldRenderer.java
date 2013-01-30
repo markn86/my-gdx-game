@@ -12,6 +12,7 @@ import model.Character;
 import model.World;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -115,7 +116,18 @@ public class WorldRenderer {
     }
 
     private void drawCharacter() {
-        spriteBatch.draw(characterTextures.get(character.getCharacterImage()), character.getPosition().x * ppuX, character.getPosition().y * ppuY, Character.WIDTH * ppuX, Character.HEIGHT * ppuY);
+        // Get the texture.
+        Texture texture = characterTextures.get(character.getCharacterImage());
+        Color c = spriteBatch.getColor();
+        // If they have been hit we want to flash their image.
+        if (character.timeSinceHit < 2) {
+            if (Math.sin((double) System.currentTimeMillis()) > 0) {
+                // Make image semi transparent.
+                spriteBatch.setColor(c.r, c.g, c.b, .3f); // set alpha to 0.3
+            }
+        }
+        spriteBatch.draw(texture, character.getPosition().x * ppuX, character.getPosition().y * ppuY, Character.WIDTH * ppuX, Character.HEIGHT * ppuY);
+        spriteBatch.setColor(c.r, c.g, c.b, 1f);
     }
 
     private void drawFlamers() {
