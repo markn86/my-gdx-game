@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class InteractiveImage {
 
-    public static final float SIZE = 1f;
+    public static final float SIZE = 25f;
 
     Texture texture;
     Vector2 position = new Vector2();

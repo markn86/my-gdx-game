@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Block {
 
-    public static final float SIZE = 1f;
+    public static final float SIZE = 20f;
 
     Vector2 position = new Vector2();
 

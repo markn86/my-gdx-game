@@ -7,8 +7,8 @@ import lib.OverlapTester;
 import lib.Sound;
 import model.Block;
 import model.Bullet;
-import model.Character;
-import model.Character.State;
+import model.Player;
+import model.Player.State;
 import model.Flamer;
 import model.World;
 
@@ -18,11 +18,11 @@ import com.badlogic.gdx.utils.Array;
 public class WorldController {
 
     enum Keys {
-        LEFT, RIGHT, JUMP
+        LEFT, RIGHT, JUMP, FIRE
     }
 
     private final World world;
-    private final Character character;
+    private final Player player;
     public static final float WORLD_SIZE = 10f;
 
     // Store the time we are at.
@@ -34,11 +34,12 @@ public class WorldController {
         keys.put(Keys.LEFT, false);
         keys.put(Keys.RIGHT, false);
         keys.put(Keys.JUMP, false);
+        keys.put(Keys.FIRE, false);
     }
 
     public WorldController(World world) {
         this.world = world;
-        this.character = world.getCharacter();
+        this.player = world.getPlayer();
     }
 
     public void update(float delta) {
@@ -49,7 +50,10 @@ public class WorldController {
         gravityDetection();
         collisionCharBlock();
         collisionCharFlamer();
-        character.update(delta);
+        player.update(delta);
+        if (keys.get(Keys.FIRE)) {
+            player.shootBullet();
+        }
         // Loop through flamers and remove them if they are dead.
         Array<Flamer> arrFlamers = world.getFlamers();
         for (int i = 0; i < arrFlamers.size; i++) {
@@ -73,42 +77,42 @@ public class WorldController {
     }
 
     private void processInput() {
-        if (character.isDead() == false) {
+        if (player.isDead() == false) {
             if (keys.get(Keys.LEFT)) {
-                character.setFacingLeft(true);
-                character.setCharacterImage();
-                if (!character.isJumping()) {
-                    character.setState(State.WALKING);
+                player.setFacingLeft(true);
+                player.setPlayerImage();
+                if (!player.isJumping()) {
+                    player.setState(State.WALKING);
                 }
-                character.getVelocity().x = -Character.SPEED;
+                player.getVelocity().x = -Player.SPEED;
             }
             if (keys.get(Keys.RIGHT)) {
-                character.setFacingLeft(false);
-                character.setCharacterImage();
-                if (!character.isJumping()) {
-                    character.setState(State.WALKING);
+                player.setFacingLeft(false);
+                player.setPlayerImage();
+                if (!player.isJumping()) {
+                    player.setState(State.WALKING);
                 }
-                character.getVelocity().x = Character.SPEED;
+                player.getVelocity().x = Player.SPEED;
             }
             if (keys.get(Keys.JUMP)) {
-                if (!character.isJumping()) {
-                    Sound.characterJump.play();
-                    character.setState(State.JUMPING);
-                    character.getVelocity().y = Character.JUMP_VELOCITY;
-                    character.getPosition().y += character.getVelocity().y * currentDelta;
+                if (!player.isJumping()) {
+                    Sound.playerJump.play();
+                    player.setState(State.JUMPING);
+                    player.getVelocity().y = Player.JUMP_VELOCITY;
+                    player.getPosition().y += player.getVelocity().y * currentDelta;
                 }
             }
             if ((keys.get(Keys.LEFT) && keys.get(Keys.RIGHT)) ||
                     (!keys.get(Keys.LEFT) && !(keys.get(Keys.RIGHT)))) {
-                if (!character.isJumping()) {
-                    character.setState(State.IDLE);
+                if (!player.isJumping()) {
+                    player.setState(State.IDLE);
                 }
                 // Horizontal speed is 0
-                character.getVelocity().x = 0;
+                player.getVelocity().x = 0;
             }
         } else {
-            character.getVelocity().x = 0;
-            character.getVelocity().y = 0;
+            player.getVelocity().x = 0;
+            player.getVelocity().y = 0;
         }
     }
 
@@ -116,10 +120,10 @@ public class WorldController {
         // Assume we are falling for now.
         falling = true;
         // Use this as a temp rectangle.
-        Rectangle tempRect = new Rectangle(character.getPosition().x,
-                (float) (character.getPosition().y - 0.05),
-                Character.WIDTH,
-                Character.HEIGHT);
+        Rectangle tempRect = new Rectangle(player.getPosition().x,
+                (float) (player.getPosition().y - 1),
+                Player.WIDTH,
+                Player.HEIGHT);
         for (Block block : world.getBlocks()){
             if (OverlapTester.overlapRectangles(block.getBounds(), tempRect)) {
                 falling = false;
@@ -127,30 +131,30 @@ public class WorldController {
             }
         }
         if (falling) {
-            character.getVelocity().y -= Character.GRAVITY * currentDelta;
+            player.getVelocity().y -= Player.GRAVITY * currentDelta;
         } else { // Set state back to walking as he has landed on the ground.
-            character.setState(State.WALKING);
-            character.getVelocity().y = 0;
+            player.setState(State.WALKING);
+            player.getVelocity().y = 0;
         }
     }
 
     private void collisionCharBlock() {
-        // Store the characters x and y position.
-        float x = character.getPosition().x;
-        float y = character.getPosition().y;
+        // Store the players x and y position.
+        float x = player.getPosition().x;
+        float y = player.getPosition().y;
         // Horizontal-left
         if (keys.get(Keys.LEFT)) {
-            x = (float) (x - 0.05);
+            x = (float) (x - 1);
         }
         // Horizontal-right
         if (keys.get(Keys.RIGHT)) {
-            x = (float) (x + 0.05);
+            x = (float) (x + 1);
         }
         // Vertical-ceiling
-        if (character.isJumping()) {
-            y = (float) (y + 0.05);
+        if (player.isJumping()) {
+            y = (float) (y + 1);
         }
-        Rectangle tempRect = new Rectangle(x, y, Character.WIDTH, Character.HEIGHT);
+        Rectangle tempRect = new Rectangle(x, y, Player.WIDTH, Player.HEIGHT);
         // Boolean to store if the user can move.
         boolean canMove = true;
         // Loop through the blocks.
@@ -160,32 +164,32 @@ public class WorldController {
                 break;
             }
         }
-        if (!canMove) { // Can't move, set x to 0 and y to 0, unless falling.
-            character.getVelocity().x = 0;
-            character.getVelocity().y = 0;
-            if (character.isJumping()) {
-                character.getVelocity().y = -Character.GRAVITY;
+        if (!canMove) { // Can't move, set x to 0 and y to 0, unless jumping, then decrease.
+            player.getVelocity().x = 0;
+            player.getVelocity().y = 0;
+            if (player.isJumping()) {
+                player.getVelocity().y = -Player.GRAVITY;
             }
         }
     }
 
     private void collisionCharFlamer() {
-        // Store the characters x and y position.
-        float x = character.getPosition().x;
-        float y = character.getPosition().y;
+        // Store the players x and y position.
+        float x = player.getPosition().x;
+        float y = player.getPosition().y;
         // Horizontal-left
         if (keys.get(Keys.LEFT)) {
-            x = (float) (x - 0.05);
+            x = (float) (x - 1);
         }
         // Horizontal-right
         if (keys.get(Keys.RIGHT)) {
-            x = (float) (x + 0.05);
+            x = (float) (x + 1);
         }
         // Vertical-ceiling
         if (keys.get(Keys.JUMP)) {
-            y = (float) (y + 0.05);
+            y = (float) (y + 1);
         }
-        Rectangle tempRect = new Rectangle(x, y, Character.WIDTH, Character.HEIGHT);
+        Rectangle tempRect = new Rectangle(x, y, Player.WIDTH, Player.HEIGHT);
         // Boolean to store if the user has been hit.
         boolean isHit = false;
         // Loop through the flamers.
@@ -197,9 +201,9 @@ public class WorldController {
         }
         // If they are hit then adjust the users health.
         if (isHit) {
-            // If the character was hit more than 2 seconds ago, register it.
-            if (character.timeSinceHit > 2) {
-                character.hit();
+            // If the player was hit more than 2 seconds ago, register it.
+            if (player.timeSinceHit > 2) {
+                player.hit();
             }
         }
     }
@@ -210,9 +214,9 @@ public class WorldController {
         float y = flamer.getPosition().y;
         // Horizontal-right
         if (flamer.facingLeft) {
-            x = (float) (x - 0.05);
+            x = (float) (x - 1);
         } else {
-            x = (float) (x + 0.05);
+            x = (float) (x + 1);
         }
         Rectangle tempRect = new Rectangle(x, y, Flamer.WIDTH, Flamer.HEIGHT);
         // Boolean to store if the flamer can move.
@@ -253,9 +257,9 @@ public class WorldController {
         float y = flamer.getPosition().y;
         // Horizontal-right
         if (flamer.facingLeft) {
-            x = (float) (x - 0.05);
+            x = (float) (x - 1);
         } else {
-            x = (float) (x + 0.05);
+            x = (float) (x + 1);
         }
         Rectangle tempRect = new Rectangle(x, y, Flamer.WIDTH, Flamer.HEIGHT);
         // Store if the flamer is hit
@@ -273,7 +277,7 @@ public class WorldController {
         }
         // If they can get hit, update.
         if (isHit) {
-            // If the character was hit more than 2 seconds ago, register it.
+            // If the flamer was hit more than 2 seconds ago, register it.
             if (flamer.timeSinceHit > 2) {
                 flamer.hit();
             }
@@ -281,14 +285,14 @@ public class WorldController {
     }
 
     public boolean collisionBulletBlock(Bullet bullet) {
-        // Store the characters x and y position.
+        // Store the players x and y position.
         float x = bullet.getPosition().x;
         float y = bullet.getPosition().y;
         // Horizontal-right
         if (bullet.facingLeft) {
-            x = (float) (x - 0.05);
+            x = (float) (x - 1);
         } else {
-            x = (float) (x + 0.05);
+            x = (float) (x + 1);
         }
         Rectangle tempRect = new Rectangle(x, y, Bullet.WIDTH, Bullet.HEIGHT);
         // Store if the flamer is hit
@@ -305,31 +309,35 @@ public class WorldController {
         return isHit;
     }
 
-    public void leftPressed() {
+    public static void leftPressed() {
         keys.put(Keys.LEFT, true);
     }
 
-    public void rightPressed() {
+    public static void rightPressed() {
         keys.put(Keys.RIGHT, true);
     }
 
-    public void jumpPressed() {
+    public static void jumpPressed() {
         keys.put(Keys.JUMP, true);
     }
 
-    public void firePressed() {
-        character.shootBullet();
+    public static void firePressed() {
+        keys.put(Keys.FIRE, true);
     }
 
-    public void leftReleased() {
+    public static void leftReleased() {
         keys.put(Keys.LEFT, false);
     }
 
-    public void rightReleased() {
+    public static void rightReleased() {
         keys.put(Keys.RIGHT, false);
     }
 
-    public void jumpReleased() {
+    public static void jumpReleased() {
         keys.put(Keys.JUMP, false);
+    }
+
+    public static void fireReleased() {
+        keys.put(Keys.FIRE, false);
     }
 }
