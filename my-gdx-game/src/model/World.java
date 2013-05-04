@@ -1,6 +1,6 @@
 package model;
 
-import view.WorldRenderer;
+import lib.Assets;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -22,7 +22,7 @@ public class World {
     public World(int w, int h, int xo, int yo, int xSpawn, int ySpawn) {
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
-                int col = (WorldRenderer.level.getPixel(x + xo * 31, y + yo * 23) & 0xffffff00) >>> 8;
+                int col = (Assets.level.getPixel(x + xo * 31, y + yo * 23) & 0xffffff00) >>> 8;
                 switch (col) {
                     case 0x914d2a: // Brown block.
                         blocks.add(new Block(new Vector2(x * 10, (h * 10) - (y * 10) - 10)));

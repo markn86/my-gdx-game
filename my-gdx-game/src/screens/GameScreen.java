@@ -1,8 +1,9 @@
 package screens;
 
+import lib.Assets;
 import lib.OverlapTester;
+import lib.Sound;
 import model.InteractiveImage;
-import model.Player;
 import model.World;
 import view.WorldRenderer;
 
@@ -18,50 +19,58 @@ import controller.WorldController;
 
 public class GameScreen implements Screen, InputProcessor {
 
-    private World world = new World(32, 24, 0, 0, 0, 0);
+    private World world;
+    private WorldController controller;
     private WorldRenderer renderer;
 
     // The interactive images, arrow keys, jump, fire.
-    InteractiveImage leftArrow;
-    InteractiveImage rightArrow;
-    InteractiveImage jumpIcon;
-    InteractiveImage fireIcon;
+    public InteractiveImage leftArrow;
+    public InteractiveImage rightArrow;
+    public InteractiveImage jumpIcon;
+    public InteractiveImage fireIcon;
 
     public static final float CAMERA_WIDTH = 320;
     public static final float CAMERA_HEIGHT = 240;
 
-    private float ppuX; // Pixels per unit on the X axis.
-    private float ppuY; // Pixels per unit on the Y axis.
-
     private int width, height;
+
+    public GameScreen() {
+        Assets.load();
+        Sound.load();
+
+        // Set the interactive images.
+        leftArrow = new InteractiveImage(Assets.interactiveTextures.get("left_arrow"), new Vector2(5, 0));
+        rightArrow = new InteractiveImage(Assets.interactiveTextures.get("right_arrow"), new Vector2(30, 0));
+        jumpIcon = new InteractiveImage(Assets.interactiveTextures.get("jump"), new Vector2(GameScreen.CAMERA_WIDTH - 60, 2));
+        fireIcon = new InteractiveImage(Assets.interactiveTextures.get("fire"), new Vector2(GameScreen.CAMERA_WIDTH - 30, 2));
+
+        world = new World(32, 24, 0, 0, 0, 0);
+        controller = new WorldController(world);
+        renderer = new WorldRenderer(world, this);
+    }
 
     @Override
     public void render(float delta) {
-    	// Update
-    	
-    	// Render    	
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
         Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-        WorldRenderer.spriteBatch.begin();
+
+        // Update the position of everything.
+        controller.update(delta);
+
+        // Render the world.
         renderer.render(delta);
-        drawInteractiveImages();
-        drawHearts();
-        WorldRenderer.spriteBatch.end();
     }
 
     @Override
     public void resize(int width, int height) {
         renderer.setSize(width, height);
-        ppuX = width / CAMERA_WIDTH;
-        ppuY = height / CAMERA_HEIGHT;
+
         this.width = width;
         this.height = height;
     }
 
     @Override
     public void show() {
-        renderer = new WorldRenderer(world);
-        loadInteractiveImages();
         Gdx.input.setInputProcessor(this);
     }
 
@@ -121,34 +130,6 @@ public class GameScreen implements Screen, InputProcessor {
         return true;
     }
 
-    private void loadInteractiveImages() {
-        leftArrow = new InteractiveImage(WorldRenderer.interactiveTextures.get("left_arrow"), new Vector2(5, 0));
-        rightArrow = new InteractiveImage(WorldRenderer.interactiveTextures.get("right_arrow"), new Vector2(30, 0));
-        jumpIcon = new InteractiveImage(WorldRenderer.interactiveTextures.get("jump"), new Vector2(GameScreen.CAMERA_WIDTH - 60, 2));
-        fireIcon = new InteractiveImage(WorldRenderer.interactiveTextures.get("fire"), new Vector2(GameScreen.CAMERA_WIDTH - 30, 2));
-    }
-
-    private void drawInteractiveImages() {
-        WorldRenderer.spriteBatch.draw(leftArrow.getTexture(), leftArrow.getPosition().x * ppuX, leftArrow.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
-        WorldRenderer.spriteBatch.draw(rightArrow.getTexture(), rightArrow.getPosition().x * ppuX, rightArrow.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
-        WorldRenderer.spriteBatch.draw(jumpIcon.getTexture(), jumpIcon.getPosition().x * ppuX, jumpIcon.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
-        WorldRenderer.spriteBatch.draw(fireIcon.getTexture(), fireIcon.getPosition().x * ppuX, fireIcon.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
-    }
-
-    private void drawHearts() {
-        // Get the players health.
-        Player player = world.getPlayer();
-        int health = player.health;
-        // Draw the full hearts.
-        for (int i = 0; i < health; i++) {
-            WorldRenderer.spriteBatch.draw(WorldRenderer.heartTextures.get("full"), (i * 15f) * ppuX, (GameScreen.CAMERA_HEIGHT - 18) * ppuY, 15f * ppuX, 15f * ppuY);
-        }
-        // Now draw empty hearts.
-        for (int i = health; i < 3; i++) {
-            WorldRenderer.spriteBatch.draw(WorldRenderer.heartTextures.get("empty"), (i * 15f) * ppuX, (GameScreen.CAMERA_HEIGHT - 18) * ppuY, 15f * ppuX, 15f * ppuY);
-        }
-    }
-
     @Override
     public void hide() {
         Gdx.input.setInputProcessor(null);
@@ -171,37 +152,37 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public boolean keyDown(int keycode) {
-    	switch (keycode) {
-	    	case Keys.W:
-	    		WorldController.jumpPressed();
-	    		break;
-	    	case Keys.A:
-	    		WorldController.leftPressed();
-	    		break;
-	    	case Keys.D:
-	    		WorldController.rightPressed();
-	    		break;
-	    	case Keys.SPACE:
-	    		WorldController.firePressed();
-    	}
+        switch (keycode) {
+            case Keys.W:
+                WorldController.jumpPressed();
+                break;
+            case Keys.A:
+                WorldController.leftPressed();
+                break;
+            case Keys.D:
+                WorldController.rightPressed();
+                break;
+            case Keys.SPACE:
+                WorldController.firePressed();
+        }
         return false;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-    	switch (keycode) {
-    	case Keys.W:
-    		WorldController.jumpReleased();
-    		break;
-    	case Keys.A:
-    		WorldController.leftReleased();
-    		break;
-    	case Keys.D:
-    		WorldController.rightReleased();
-    		break;
-    	case Keys.SPACE:
-    		WorldController.fireReleased();
-	}
+        switch (keycode) {
+            case Keys.W:
+                WorldController.jumpReleased();
+                break;
+            case Keys.A:
+                WorldController.leftReleased();
+                break;
+            case Keys.D:
+                WorldController.rightReleased();
+                break;
+            case Keys.SPACE:
+                WorldController.fireReleased();
+        }
         return false;
     }
 

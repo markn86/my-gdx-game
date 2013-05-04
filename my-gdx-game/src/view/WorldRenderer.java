@@ -1,46 +1,27 @@
 package view;
 
-import java.util.HashMap;
-import java.util.Map;
 
 import screens.GameScreen;
 
-import lib.Sound;
+import lib.Assets;
 import model.Bullet;
 import model.Flamer;
 import model.Block;
+import model.InteractiveImage;
 import model.Player;
 import model.World;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-
-import controller.WorldController;
 
 public class WorldRenderer {
 
     // The world.
     private World world;
 
-    // The controller.
-    private WorldController controller;
-
     // The player.
     Player player;
-
-    // The world the player will be playing in.
-    public static Pixmap level = new Pixmap(Gdx.files.internal("images/levels.png"));
-
-    // Textures.
-    private Texture blockTexture;
-    public static Map<String, Texture> interactiveTextures;
-    public static Map<String, Texture> flamerTextures;
-    public static Map<String, Texture> playerTextures;
-    public static Map<String, Texture> heartTextures;
-    private Texture bulletTexture;
 
     public static SpriteBatch spriteBatch;
     private int width;
@@ -48,46 +29,14 @@ public class WorldRenderer {
     private float ppuX; // Pixels per unit on the X axis.
     private float ppuY; // Pixels per unit on the Y axis.
 
-    public WorldRenderer(World world) {
+    private GameScreen gameScreen;
+
+    public WorldRenderer(World world, GameScreen gameScreen) {
         this.world = world;
-        controller = new WorldController(world);
+        this.gameScreen = gameScreen;
 
         player = world.getPlayer();
         spriteBatch = new SpriteBatch();
-        playerTextures = new HashMap<String, Texture>();
-        flamerTextures = new HashMap<String, Texture>();
-        interactiveTextures = new HashMap<String, Texture>();
-        heartTextures = new HashMap<String, Texture>();
-        loadTextures();
-        Sound.load();
-    }
-
-    private void loadTextures() {
-        // Store player textures.
-        playerTextures.put("walking_left_1", new Texture(Gdx.files.internal("images/wizard_01_left.png")));
-        playerTextures.put("walking_left_2", new Texture(Gdx.files.internal("images/wizard_02_left.png")));
-        playerTextures.put("walking_right_1", new Texture(Gdx.files.internal("images/wizard_01_right.png")));
-        playerTextures.put("walking_right_2", new Texture(Gdx.files.internal("images/wizard_02_right.png")));
-
-        // Block textures.
-        blockTexture = new Texture(Gdx.files.internal("images/brown_block.png"));
-
-        // Flamer Guy texture.
-        flamerTextures.put("flame_guy_left", new Texture(Gdx.files.internal("images/flame_guy_left.png")));
-        flamerTextures.put("flame_guy_right", new Texture(Gdx.files.internal("images/flame_guy_right.png")));
-
-        // Heart textures.
-        heartTextures.put("full", new Texture(Gdx.files.internal("images/heart.png")));
-        heartTextures.put("empty", new Texture(Gdx.files.internal("images/empty_heart.png")));
-
-        // Interactive Image textures.
-        interactiveTextures.put("left_arrow", new Texture(Gdx.files.internal("images/left_arrow.png")));
-        interactiveTextures.put("right_arrow", new Texture(Gdx.files.internal("images/right_arrow.png")));
-        interactiveTextures.put("jump", new Texture(Gdx.files.internal("images/jump.png")));
-        interactiveTextures.put("fire", new Texture(Gdx.files.internal("images/fire_button.png")));
-
-        // Bullet texture.
-        bulletTexture = new Texture(Gdx.files.internal("images/bullet_orange.png"));
     }
 
     public void setSize(int w, int h) {
@@ -98,14 +47,17 @@ public class WorldRenderer {
     }
 
     public void render(float delta) {
-        // Update the position of everything.
-        controller.update(delta);
+        spriteBatch.begin();
 
         // Draw the elements.
         drawBlocks(world);
         drawPlayer(world);
         drawFlamers(world);
         drawBullets(world);
+
+        // Draw the non-moving images.
+        drawInteractiveImages();
+        drawHearts();
 
         // Check here if we need to start transition between screens.
         float x = player.getPosition().x;
@@ -125,6 +77,8 @@ public class WorldRenderer {
         if (x > GameScreen.CAMERA_WIDTH - h + 5) {
             this.transition(1, 0);
         }
+
+        spriteBatch.end();
     }
 
     public void transition(int xa, int ya) {
@@ -137,18 +91,17 @@ public class WorldRenderer {
 
         world = new World(32, 24, xa, ya, (int) player.getPosition().x, (int) (player.getPosition().y + ya * 5));
         player = world.getPlayer();
-        controller = new WorldController(world);
     }
 
     private void drawBlocks(World world) {
         for (Block block : world.getBlocks()) {
-            spriteBatch.draw(blockTexture, block.getPosition().x * ppuX, block.getPosition().y * ppuY, Block.SIZE * ppuX, Block.SIZE * ppuY);
+            spriteBatch.draw(Assets.blockTexture, block.getPosition().x * ppuX, block.getPosition().y * ppuY, Block.SIZE * ppuX, Block.SIZE * ppuY);
         }
     }
 
     private void drawPlayer(World world) {
         // Get the texture.
-        Texture texture = playerTextures.get(player.getPlayerImage());
+        Texture texture = Assets.playerTextures.get(player.getPlayerImage());
         Color c = spriteBatch.getColor();
         // If they have been hit we want to flash their image.
         if (player.timeSinceHit < 2) {
@@ -163,13 +116,39 @@ public class WorldRenderer {
 
     private void drawFlamers(World world) {
         for (Flamer flamer : world.getFlamers()) {
-            spriteBatch.draw(flamerTextures.get(flamer.getFlamerImage()), flamer.getPosition().x * ppuX, flamer.getPosition().y * ppuY, Flamer.WIDTH * ppuX, Flamer.HEIGHT * ppuY);
+            spriteBatch.draw(Assets.flamerTextures.get(flamer.getFlamerImage()), flamer.getPosition().x * ppuX, flamer.getPosition().y * ppuY, Flamer.WIDTH * ppuX, Flamer.HEIGHT * ppuY);
         }
     }
 
     private void drawBullets(World world) {
         for (Bullet bullet : world.getBullets()) {
-            spriteBatch.draw(bulletTexture, bullet.getPosition().x * ppuX, bullet.getPosition().y * ppuY, Bullet.WIDTH * ppuX, Bullet.HEIGHT * ppuY);
+            spriteBatch.draw(Assets.bulletTexture, bullet.getPosition().x * ppuX, bullet.getPosition().y * ppuY, Bullet.WIDTH * ppuX, Bullet.HEIGHT * ppuY);
+        }
+    }
+
+    private void drawInteractiveImages() {
+        InteractiveImage leftArrow = gameScreen.leftArrow;
+        InteractiveImage rightArrow = gameScreen.rightArrow;
+        InteractiveImage jumpIcon = gameScreen.jumpIcon;
+        InteractiveImage fireIcon = gameScreen.fireIcon;
+
+        spriteBatch.draw(leftArrow.getTexture(), leftArrow.getPosition().x * ppuX, leftArrow.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
+        spriteBatch.draw(rightArrow.getTexture(), rightArrow.getPosition().x * ppuX, rightArrow.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
+        spriteBatch.draw(jumpIcon.getTexture(), jumpIcon.getPosition().x * ppuX, jumpIcon.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
+        spriteBatch.draw(fireIcon.getTexture(), fireIcon.getPosition().x * ppuX, fireIcon.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
+    }
+
+    private void drawHearts() {
+        // Get the players health.
+        Player player = world.getPlayer();
+        int health = player.health;
+        // Draw the full hearts.
+        for (int i = 0; i < health; i++) {
+            spriteBatch.draw(Assets.heartTextures.get("full"), (i * 15f) * ppuX, (GameScreen.CAMERA_HEIGHT - 18) * ppuY, 15f * ppuX, 15f * ppuY);
+        }
+        // Now draw empty hearts.
+        for (int i = health; i < 3; i++) {
+            spriteBatch.draw(Assets.heartTextures.get("empty"), (i * 15f) * ppuX, (GameScreen.CAMERA_HEIGHT - 18) * ppuY, 15f * ppuX, 15f * ppuY);
         }
     }
 }
