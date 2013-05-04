@@ -3,6 +3,8 @@ package controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import screens.GameScreen;
+
 import lib.OverlapTester;
 import lib.Sound;
 import model.Block;
@@ -21,9 +23,15 @@ public class WorldController {
         LEFT, RIGHT, JUMP, FIRE
     }
 
-    private final World world;
+    private World world;
     private final Player player;
     public static final float WORLD_SIZE = 10f;
+
+    // The variables representing the direction the character went off screen.
+    public final int DOWN = 1;
+    public final int UP = 2;
+    public final int LEFT = 3;
+    public final int RIGHT = 4;
 
     // Store the time we are at.
     public static float currentDelta;
@@ -51,6 +59,7 @@ public class WorldController {
         collisionCharBlock();
         collisionCharFlamer();
         player.update(delta);
+        movingOffScreen();
         if (keys.get(Keys.FIRE)) {
             player.shootBullet();
         }
@@ -307,6 +316,54 @@ public class WorldController {
         }
 
         return isHit;
+    }
+
+    public void movingOffScreen() {
+        // Check here if we need to start transition between screens.
+        float x = player.getPosition().x;
+        float y = player.getPosition().y;
+
+        // Check if the player has moved off screen and that their velocity is
+        // heading in that direction so they do not loop between two screens.
+        if ((y < 5) && (player.getVelocity().y < 0)) {
+            this.transition(DOWN);
+        } else if ((y > GameScreen.CAMERA_HEIGHT - (Player.HEIGHT + 5))
+                && (player.getVelocity().y > 0)) {
+            this.transition(UP);
+        } else if ((x < 5) && (player.getVelocity().x < 0)) {
+            this.transition(LEFT);
+        } else if ((x > GameScreen.CAMERA_WIDTH - (Player.WIDTH + 5))
+                && (player.getVelocity().x > 0)) {
+            this.transition(RIGHT);
+        }
+    }
+
+    public void transition(int direction) {
+        int xo = 0;
+        int yo = 0;
+
+        switch (direction) {
+            case UP :
+                yo = -1;
+                player.getPosition().y = Player.HEIGHT;
+                break;
+            case DOWN :
+                yo = 1;
+                player.getPosition().y = GameScreen.CAMERA_HEIGHT - Player.HEIGHT;
+                break;
+            case LEFT :
+                xo = -1;
+                player.getPosition().x = GameScreen.CAMERA_WIDTH - Player.WIDTH;
+                break;
+            case RIGHT :
+                xo = 1;
+                player.getPosition().x = Player.WIDTH;
+        }
+
+        // Update the location of where we are now on levels.png.
+        world.topLeftPixelX = world.topLeftPixelX + (World.widthInPixels * xo);
+        world.topLeftPixelY = world.topLeftPixelY + (World.heightInPixels * yo);
+        world.update();
     }
 
     public static void leftPressed() {

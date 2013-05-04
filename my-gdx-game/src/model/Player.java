@@ -28,6 +28,7 @@ public class Player {
 
     public State state = State.IDLE;
     boolean facingLeft = true;
+    public boolean isSpawned = false;
 
     // Keep track of which image we last used to display the player.
     String playerImage = "walking_left_1";

@@ -44,7 +44,7 @@ public class GameScreen implements Screen, InputProcessor {
         jumpIcon = new InteractiveImage(Assets.interactiveTextures.get("jump"), new Vector2(GameScreen.CAMERA_WIDTH - 60, 2));
         fireIcon = new InteractiveImage(Assets.interactiveTextures.get("fire"), new Vector2(GameScreen.CAMERA_WIDTH - 30, 2));
 
-        world = new World(32, 24, 0, 0, 0, 0);
+        world = new World();
         controller = new WorldController(world);
         renderer = new WorldRenderer(world, this);
     }

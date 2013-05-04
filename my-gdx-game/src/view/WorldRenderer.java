@@ -1,6 +1,5 @@
 package view;
 
-
 import screens.GameScreen;
 
 import lib.Assets;
@@ -59,38 +58,7 @@ public class WorldRenderer {
         drawInteractiveImages();
         drawHearts();
 
-        // Check here if we need to start transition between screens.
-        float x = player.getPosition().x;
-        float y = player.getPosition().y;
-        float w = Player.WIDTH;
-        float h = Player.HEIGHT;
-
-        if (y < 5) {
-            this.transition(0, -1);
-        }
-        if (y > GameScreen.CAMERA_HEIGHT - w + 5) {
-            this.transition(0, 1);
-        }
-        if (x < 5) {
-            this.transition(-1, 0);
-        }
-        if (x > GameScreen.CAMERA_WIDTH - h + 5) {
-            this.transition(1, 0);
-        }
-
         spriteBatch.end();
-    }
-
-    public void transition(int xa, int ya) {
-        player.getPosition().x -= xa * GameScreen.CAMERA_WIDTH;
-        player.getPosition().y -= ya * GameScreen.CAMERA_HEIGHT;
-
-        if (ya != 0) {
-            player.getPosition().y -= 10;
-        }
-
-        world = new World(32, 24, xa, ya, (int) player.getPosition().x, (int) (player.getPosition().y + ya * 5));
-        player = world.getPlayer();
     }
 
     private void drawBlocks(World world) {
@@ -100,18 +68,20 @@ public class WorldRenderer {
     }
 
     private void drawPlayer(World world) {
-        // Get the texture.
-        Texture texture = Assets.playerTextures.get(player.getPlayerImage());
-        Color c = spriteBatch.getColor();
-        // If they have been hit we want to flash their image.
-        if (player.timeSinceHit < 2) {
-            if (Math.sin((double) System.currentTimeMillis()) > 0) {
-                // Set alpha to 0.3.
-                spriteBatch.setColor(c.r, c.g, c.b, .3f);
+        if (player.isSpawned) {
+            // Get the texture.
+            Texture texture = Assets.playerTextures.get(player.getPlayerImage());
+            Color c = spriteBatch.getColor();
+            // If they have been hit we want to flash their image.
+            if (player.timeSinceHit < 2) {
+                if (Math.sin((double) System.currentTimeMillis()) > 0) {
+                    // Set alpha to 0.3.
+                    spriteBatch.setColor(c.r, c.g, c.b, .3f);
+                }
             }
+            spriteBatch.draw(texture, player.getPosition().x * ppuX, player.getPosition().y * ppuY, Player.WIDTH * ppuX, Player.HEIGHT * ppuY);
+            spriteBatch.setColor(c.r, c.g, c.b, 1f);
         }
-        spriteBatch.draw(texture, player.getPosition().x * ppuX, player.getPosition().y * ppuY, Player.WIDTH * ppuX, Player.HEIGHT * ppuY);
-        spriteBatch.setColor(c.r, c.g, c.b, 1f);
     }
 
     private void drawFlamers(World world) {
