@@ -73,7 +73,7 @@ public class WorldRenderer {
             Texture texture = Assets.playerTextures.get(player.getPlayerImage());
             Color c = spriteBatch.getColor();
             // If they have been hit we want to flash their image.
-            if (player.timeSinceHit < 2) {
+            if (player.timeSinceHit < player.hitFrequency) {
                 if (Math.sin((double) System.currentTimeMillis()) > 0) {
                     // Set alpha to 0.3.
                     spriteBatch.setColor(c.r, c.g, c.b, .3f);

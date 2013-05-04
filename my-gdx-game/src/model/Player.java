@@ -20,8 +20,10 @@ public class Player {
     public static final float HEIGHT = 25f;
 
     public int health = 3;
-    public float timeSinceHit = 2;
+    public float hitFrequency = 2; // Determines how quickly they can be hit.
+    public float timeSinceHit = hitFrequency; // Set this to the hit frequency so they don't spawn flashing.
     public float timeSinceLastShot = 0;
+    public float shotFrequency = 1; // How often they are allowed to shoot.
 
     Vector2 position = new Vector2();
     Vector2 velocity = new Vector2();
@@ -109,8 +111,8 @@ public class Player {
     }
 
     public void shootBullet() {
-        // Can only shoot the bullet once every second.
-        if (timeSinceLastShot < 1) {
+        // Check that they are allowed to shoot.
+        if (timeSinceLastShot < shotFrequency) {
             return;
         }
         timeSinceLastShot = 0;

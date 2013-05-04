@@ -211,7 +211,7 @@ public class WorldController {
         // If they are hit then adjust the users health.
         if (isHit) {
             // If the player was hit more than 2 seconds ago, register it.
-            if (player.timeSinceHit > 2) {
+            if (player.timeSinceHit > player.hitFrequency) {
                 player.hit();
             }
         }
@@ -286,8 +286,8 @@ public class WorldController {
         }
         // If they can get hit, update.
         if (isHit) {
-            // If the flamer was hit more than 2 seconds ago, register it.
-            if (flamer.timeSinceHit > 2) {
+            // If the flamer was hit more than the hit frequency, register it.
+            if (flamer.timeSinceHit > flamer.hitFrequency) {
                 flamer.hit();
             }
         }

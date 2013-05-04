@@ -15,6 +15,7 @@ public class Flamer {
 
     public int health = 3;
     public float timeSinceHit = 0;
+    public float hitFrequency = 2; // How often they can be hit.
 
     Vector2 position = new Vector2();
     Vector2 velocity = new Vector2();
