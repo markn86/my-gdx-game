@@ -8,6 +8,7 @@ import view.WorldRenderer;
 
 import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL10;
@@ -36,6 +37,9 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void render(float delta) {
+    	// Update
+    	
+    	// Render    	
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
         Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
         WorldRenderer.spriteBatch.begin();
@@ -167,13 +171,37 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public boolean keyDown(int keycode) {
-        // TODO Auto-generated method stub
+    	switch (keycode) {
+	    	case Keys.W:
+	    		WorldController.jumpPressed();
+	    		break;
+	    	case Keys.A:
+	    		WorldController.leftPressed();
+	    		break;
+	    	case Keys.D:
+	    		WorldController.rightPressed();
+	    		break;
+	    	case Keys.SPACE:
+	    		WorldController.firePressed();
+    	}
         return false;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        // TODO Auto-generated method stub
+    	switch (keycode) {
+    	case Keys.W:
+    		WorldController.jumpReleased();
+    		break;
+    	case Keys.A:
+    		WorldController.leftReleased();
+    		break;
+    	case Keys.D:
+    		WorldController.rightReleased();
+    		break;
+    	case Keys.SPACE:
+    		WorldController.fireReleased();
+	}
         return false;
     }
 
