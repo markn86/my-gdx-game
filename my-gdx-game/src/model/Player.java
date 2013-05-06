@@ -2,10 +2,9 @@ package model;
 
 import lib.Sound;
 
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
-public class Player {
+public class Player extends BoundObject {
 
     public enum State {
         IDLE, WALKING, JUMPING, DYING
@@ -16,8 +15,6 @@ public class Player {
     public static final float SPEED = 60f; // Units per second.
     public static final float JUMP_VELOCITY = 70f;
     public static final float GRAVITY = 70f;
-    public static final float WIDTH = 15f;
-    public static final float HEIGHT = 25f;
 
     public int health = 3;
     public float hitFrequency = 2; // Determines how quickly they can be hit.
@@ -25,31 +22,15 @@ public class Player {
     public float timeSinceLastShot = 0;
     public float shotFrequency = 1; // How often they are allowed to shoot.
 
-    Vector2 position = new Vector2();
-    Vector2 velocity = new Vector2();
-
     public State state = State.IDLE;
-    boolean facingLeft = true;
     public boolean isSpawned = false;
 
     // Keep track of which image we last used to display the player.
     String playerImage = "walking_left_1";
 
     public Player(Vector2 position, World world) {
+        super(position, 15f, 25f);
         this.world = world;
-        this.position = position;
-    }
-
-    public void setFacingLeft(boolean facingLeft) {
-        this.facingLeft = facingLeft;
-    }
-
-    public Vector2 getPosition() {
-        return position;
-    }
-
-    public Vector2 getVelocity() {
-        return velocity;
     }
 
     public State getState() {
@@ -61,17 +42,19 @@ public class Player {
     }
 
     public void update(float delta) {
-        position.add(velocity.tmp().mul(delta));
+        super.update(delta);
         timeSinceHit += delta;
         timeSinceLastShot += delta;
     }
 
     public void hit() {
-        if (health >= 0){
-            health--;
+        if (timeSinceHit > hitFrequency) {
+            if (health >= 0){
+                health--;
+            }
+            // Reset the count.
+            timeSinceHit = 0;
         }
-        // Reset the count.
-        timeSinceHit = 0;
     }
 
     public boolean isDead() {
@@ -90,12 +73,8 @@ public class Player {
         return playerImage;
     }
 
-    public void setPosition(Vector2 position) {
-        this.position = position;
-    }
-
     public void setPlayerImage() {
-        if (this.facingLeft) {
+        if (facingLeft) {
             if (playerImage == "walking_left_1") {
                 playerImage = "walking_left_2";
             } else {
@@ -126,16 +105,6 @@ public class Player {
         Bullet bullet = new Bullet(bulletPosition, facingLeft);
         world.addBullet(bullet);
         Sound.playerBullet.play();
-    }
-
-    public Rectangle getBounds() {
-        Rectangle bounds = new Rectangle();
-        bounds.width = WIDTH;
-        bounds.height = HEIGHT;
-        bounds.x = position.x;
-        bounds.y = position.y;
-
-        return bounds;
     }
 }
 

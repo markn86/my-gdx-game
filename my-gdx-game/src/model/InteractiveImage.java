@@ -1,36 +1,19 @@
 package model;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
-public class InteractiveImage {
-
-    public static final float SIZE = 25f;
+public class InteractiveImage extends BoundObject {
 
     Texture texture;
-    Vector2 position = new Vector2();
 
-    public InteractiveImage(Texture texture, Vector2 pos) {
+    public InteractiveImage(Texture texture, Vector2 position) {
+        super(position, 25f, 25f);
         this.texture = texture;
-        this.position = pos;
     }
 
     public Texture getTexture() {
         return texture;
     }
 
-    public Vector2 getPosition() {
-        return position;
-    }
-
-    public Rectangle getBounds() {
-        Rectangle bounds = new Rectangle();
-        bounds.width = SIZE;
-        bounds.height = SIZE;
-        bounds.x = position.x;
-        bounds.y = position.y;
-
-        return bounds;
-    }
 }

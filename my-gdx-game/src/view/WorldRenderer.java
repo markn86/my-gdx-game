@@ -3,9 +3,8 @@ package view;
 import screens.GameScreen;
 
 import lib.Assets;
-import model.Bullet;
+import model.BoundObject;
 import model.Flamer;
-import model.Block;
 import model.InteractiveImage;
 import model.Player;
 import model.World;
@@ -62,8 +61,9 @@ public class WorldRenderer {
     }
 
     private void drawBlocks(World world) {
-        for (Block block : world.getBlocks()) {
-            spriteBatch.draw(Assets.blockTexture, block.getPosition().x * ppuX, block.getPosition().y * ppuY, Block.SIZE * ppuX, Block.SIZE * ppuY);
+        for (BoundObject block : world.getBlocks()) {
+            spriteBatch.draw(Assets.blockTexture, block.getPosition().x * ppuX, block.getPosition().y * ppuY,
+                    block.width * ppuX, block.height * ppuY);
         }
     }
 
@@ -79,20 +79,23 @@ public class WorldRenderer {
                     spriteBatch.setColor(c.r, c.g, c.b, .3f);
                 }
             }
-            spriteBatch.draw(texture, player.getPosition().x * ppuX, player.getPosition().y * ppuY, Player.WIDTH * ppuX, Player.HEIGHT * ppuY);
+            spriteBatch.draw(texture, player.getPosition().x * ppuX, player.getPosition().y * ppuY, player.width * ppuX,
+                    player.height * ppuY);
             spriteBatch.setColor(c.r, c.g, c.b, 1f);
         }
     }
 
     private void drawFlamers(World world) {
-        for (Flamer flamer : world.getFlamers()) {
-            spriteBatch.draw(Assets.flamerTextures.get(flamer.getFlamerImage()), flamer.getPosition().x * ppuX, flamer.getPosition().y * ppuY, Flamer.WIDTH * ppuX, Flamer.HEIGHT * ppuY);
+        for (BoundObject flamer : world.getFlamers()) {
+            spriteBatch.draw(Assets.flamerTextures.get(((Flamer) flamer).getFlamerImage()), flamer.getPosition().x * ppuX,
+                flamer.getPosition().y * ppuY, flamer.width * ppuX, flamer.height * ppuY);
         }
     }
 
     private void drawBullets(World world) {
-        for (Bullet bullet : world.getBullets()) {
-            spriteBatch.draw(Assets.bulletTexture, bullet.getPosition().x * ppuX, bullet.getPosition().y * ppuY, Bullet.WIDTH * ppuX, Bullet.HEIGHT * ppuY);
+        for (BoundObject bullet : world.getBullets()) {
+            spriteBatch.draw(Assets.bulletTexture, bullet.getPosition().x * ppuX, bullet.getPosition().y * ppuY,
+                bullet.width * ppuX, bullet.height * ppuY);
         }
     }
 
@@ -102,10 +105,14 @@ public class WorldRenderer {
         InteractiveImage jumpIcon = gameScreen.jumpIcon;
         InteractiveImage fireIcon = gameScreen.fireIcon;
 
-        spriteBatch.draw(leftArrow.getTexture(), leftArrow.getPosition().x * ppuX, leftArrow.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
-        spriteBatch.draw(rightArrow.getTexture(), rightArrow.getPosition().x * ppuX, rightArrow.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
-        spriteBatch.draw(jumpIcon.getTexture(), jumpIcon.getPosition().x * ppuX, jumpIcon.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
-        spriteBatch.draw(fireIcon.getTexture(), fireIcon.getPosition().x * ppuX, fireIcon.getPosition().y * ppuY, InteractiveImage.SIZE * ppuX, InteractiveImage.SIZE * ppuY);
+        spriteBatch.draw(leftArrow.getTexture(), leftArrow.getPosition().x * ppuX, leftArrow.getPosition().y * ppuY,
+            leftArrow.width * ppuX, leftArrow.height * ppuY);
+        spriteBatch.draw(rightArrow.getTexture(), rightArrow.getPosition().x * ppuX, rightArrow.getPosition().y * ppuY,
+            rightArrow.width * ppuX, rightArrow.height * ppuY);
+        spriteBatch.draw(jumpIcon.getTexture(), jumpIcon.getPosition().x * ppuX, jumpIcon.getPosition().y * ppuY,
+            jumpIcon.width * ppuX, jumpIcon.height * ppuY);
+        spriteBatch.draw(fireIcon.getTexture(), fireIcon.getPosition().x * ppuX, fireIcon.getPosition().y * ppuY,
+            fireIcon.width * ppuX, fireIcon.height * ppuY);
     }
 
     private void drawHearts() {
@@ -114,11 +121,13 @@ public class WorldRenderer {
         int health = player.health;
         // Draw the full hearts.
         for (int i = 0; i < health; i++) {
-            spriteBatch.draw(Assets.heartTextures.get("full"), (i * 15f) * ppuX, (GameScreen.CAMERA_HEIGHT - 18) * ppuY, 15f * ppuX, 15f * ppuY);
+            spriteBatch.draw(Assets.heartTextures.get("full"), (i * 15f) * ppuX, (GameScreen.CAMERA_HEIGHT - 18) * ppuY,
+                15f * ppuX, 15f * ppuY);
         }
         // Now draw empty hearts.
         for (int i = health; i < 3; i++) {
-            spriteBatch.draw(Assets.heartTextures.get("empty"), (i * 15f) * ppuX, (GameScreen.CAMERA_HEIGHT - 18) * ppuY, 15f * ppuX, 15f * ppuY);
+            spriteBatch.draw(Assets.heartTextures.get("empty"), (i * 15f) * ppuX, (GameScreen.CAMERA_HEIGHT - 18) * ppuY,
+                15f * ppuX, 15f * ppuY);
         }
     }
 }
