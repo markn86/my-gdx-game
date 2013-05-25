@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 public class Flamer extends BoundObject {
 
     public enum State {
-        IDLE, WALKING, JUMPING, DYING
+        IDLE, WALKING, JUMPING
     }
 
     public static final float SPEED = 20f; // Units per second.
@@ -42,13 +42,5 @@ public class Flamer extends BoundObject {
         }
 
         return false;
-    }
-
-    public String getFlamerImage() {
-        if (facingLeft) {
-            return "flame_guy_left";
-        } else {
-            return "flame_guy_right";
-        }
     }
 }

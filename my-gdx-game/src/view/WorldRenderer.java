@@ -4,14 +4,13 @@ import screens.GameScreen;
 
 import lib.Assets;
 import model.BoundObject;
-import model.Flamer;
 import model.InteractiveImage;
 import model.Player;
 import model.World;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class WorldRenderer {
 
@@ -44,7 +43,7 @@ public class WorldRenderer {
         ppuY = height / GameScreen.CAMERA_HEIGHT;
     }
 
-    public void render(float delta) {
+    public void render() {
         spriteBatch.begin();
 
         // Draw the elements.
@@ -69,8 +68,6 @@ public class WorldRenderer {
 
     private void drawPlayer(World world) {
         if (player.isSpawned) {
-            // Get the texture.
-            Texture texture = Assets.playerTextures.get(player.getPlayerImage());
             Color c = spriteBatch.getColor();
             // If they have been hit we want to flash their image.
             if (player.timeSinceHit < player.hitFrequency) {
@@ -79,16 +76,19 @@ public class WorldRenderer {
                     spriteBatch.setColor(c.r, c.g, c.b, .3f);
                 }
             }
-            spriteBatch.draw(texture, player.getPosition().x * ppuX, player.getPosition().y * ppuY, player.width * ppuX,
-                    player.height * ppuY);
+            // Get the texture region.
+            TextureRegion frame = player.facingLeft ? Assets.playerLeftWalk.getKeyFrame(player.movingStateTime, true) : Assets.playerRightWalk.getKeyFrame(
+                    player.movingStateTime, true);
+            spriteBatch.draw(frame, player.getPosition().x * ppuX, player.getPosition().y * ppuY, player.width * ppuX, player.height * ppuY);
             spriteBatch.setColor(c.r, c.g, c.b, 1f);
         }
     }
 
     private void drawFlamers(World world) {
         for (BoundObject flamer : world.getFlamers()) {
-            spriteBatch.draw(Assets.flamerTextures.get(((Flamer) flamer).getFlamerImage()), flamer.getPosition().x * ppuX,
-                flamer.getPosition().y * ppuY, flamer.width * ppuX, flamer.height * ppuY);
+            TextureRegion frame = flamer.facingLeft ? Assets.flamerLeftWalk.getKeyFrame(this.gameScreen.totalTime, true) : Assets.flamerRightWalk.getKeyFrame(
+                    this.gameScreen.totalTime, true);
+            spriteBatch.draw(frame, flamer.getPosition().x * ppuX, flamer.getPosition().y * ppuY, flamer.width * ppuX, flamer.height * ppuY);
         }
     }
 

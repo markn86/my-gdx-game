@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 public class Player extends BoundObject {
 
     public enum State {
-        IDLE, WALKING, JUMPING, DYING
+        IDLE, WALKING, JUMPING
     }
 
     private World world;
@@ -25,8 +25,8 @@ public class Player extends BoundObject {
     public State state = State.IDLE;
     public boolean isSpawned = false;
 
-    // Keep track of which image we last used to display the player.
-    String playerImage = "walking_left_1";
+    // The time the player has spent in a moving state.
+    public float movingStateTime = 0;
 
     public Player(Vector2 position, World world) {
         super(position, 15f, 25f);
@@ -38,10 +38,18 @@ public class Player extends BoundObject {
     }
 
     public void setState(State newState) {
+        // Changed state, so set the time in this state back to 0.
+        if (this.state != newState) {
+            this.movingStateTime = 0;
+        }
         this.state = newState;
     }
 
     public void update(float delta) {
+        // Only update this if he is not idle.
+        if (this.state != State.IDLE) {
+            movingStateTime += delta;
+        }
         super.update(delta);
         timeSinceHit += delta;
         timeSinceLastShot += delta;
@@ -67,26 +75,6 @@ public class Player extends BoundObject {
 
     public boolean isJumping() {
         return this.state == State.JUMPING;
-    }
-
-    public String getPlayerImage() {
-        return playerImage;
-    }
-
-    public void setPlayerImage() {
-        if (facingLeft) {
-            if (playerImage == "walking_left_1") {
-                playerImage = "walking_left_2";
-            } else {
-                playerImage = "walking_left_1";
-            }
-        } else {
-            if (playerImage == "walking_right_1") {
-                playerImage = "walking_right_2";
-            } else {
-                playerImage = "walking_right_1";
-            }
-        }
     }
 
     public void shootBullet() {

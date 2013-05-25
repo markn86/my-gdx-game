@@ -29,6 +29,9 @@ public class GameScreen implements Screen, InputProcessor {
     public InteractiveImage jumpIcon;
     public InteractiveImage fireIcon;
 
+    // Total time the game has been running.
+    public float totalTime = 0;
+
     public static final float CAMERA_WIDTH = 320;
     public static final float CAMERA_HEIGHT = 240;
 
@@ -54,11 +57,14 @@ public class GameScreen implements Screen, InputProcessor {
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
         Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
+        // Update the total time the game has been running.
+        totalTime += delta;
+
         // Update the position of everything.
         controller.update(delta);
 
         // Render the world.
-        renderer.render(delta);
+        renderer.render();
     }
 
     @Override

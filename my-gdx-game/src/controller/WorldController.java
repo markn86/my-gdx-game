@@ -31,7 +31,7 @@ public class WorldController {
     public final int LEFT = 3;
     public final int RIGHT = 4;
 
-    // Store the time we are at.
+    // Store the time from the last frame.
     public float delta;
     boolean falling = true;
 
@@ -49,7 +49,7 @@ public class WorldController {
     }
 
     public void update(float delta) {
-        // Set the current time to variable that can be accessed by other functions.
+        // Set the time from the last frame to a variable that can be accessed by other functions.
         this.delta = delta;
         // Begin the gaming process.
         processInput();
@@ -62,14 +62,12 @@ public class WorldController {
         if (player.isDead() == false) {
             if (keys.get(Keys.LEFT)) {
                 player.facingLeft = true;
-                player.setPlayerImage();
                 if (!player.isJumping()) {
                     player.setState(State.WALKING);
                 }
                 player.getVelocity().x = -Player.SPEED;
             } else if (keys.get(Keys.RIGHT)) {
                 player.facingLeft = false;
-                player.setPlayerImage();
                 if (!player.isJumping()) {
                     player.setState(State.WALKING);
                 }
@@ -87,12 +85,6 @@ public class WorldController {
             }
             if (keys.get(Keys.FIRE)) {
                 player.shootBullet();
-            }
-            if ((keys.get(Keys.LEFT) && keys.get(Keys.RIGHT)) ||
-                    (!keys.get(Keys.LEFT) && !(keys.get(Keys.RIGHT)))) {
-                if (!player.isJumping()) {
-                    player.setState(State.IDLE);
-                }
             }
         } else {
             player.getVelocity().x = 0;
@@ -167,7 +159,7 @@ public class WorldController {
         if (falling) {
             player.getVelocity().y -= Player.GRAVITY * delta;
         } else {
-            player.setState(State.IDLE);
+            player.setState(State.WALKING);
         }
     }
 
@@ -208,7 +200,6 @@ public class WorldController {
 
         return contact;
     }
-
 
     public void movingOffScreen() {
         // Check here if we need to start transition between screens.
