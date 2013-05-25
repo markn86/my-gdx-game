@@ -7,8 +7,7 @@ import screens.GameScreen;
 
 import lib.Sound;
 import model.Player;
-import model.Player.State;
-import model.Flamer;
+import model.BoundObject.State;
 import model.World;
 import model.BoundObject;
 
@@ -65,13 +64,13 @@ public class WorldController {
                 if (!player.isJumping()) {
                     player.setState(State.WALKING);
                 }
-                player.getVelocity().x = -Player.SPEED;
+                player.getVelocity().x = -player.speed;
             } else if (keys.get(Keys.RIGHT)) {
                 player.facingLeft = false;
                 if (!player.isJumping()) {
                     player.setState(State.WALKING);
                 }
-                player.getVelocity().x = Player.SPEED;
+                player.getVelocity().x = player.speed;
             } else {
                 player.setState(State.IDLE);
                 player.getVelocity().x = 0;
@@ -80,7 +79,7 @@ public class WorldController {
                 if (!player.isJumping()) {
                     Sound.playerJump.play();
                     player.setState(State.JUMPING);
-                    player.getVelocity().y = Player.JUMP_VELOCITY;
+                    player.getVelocity().y = player.jump_velocity;
                 }
             }
             if (keys.get(Keys.FIRE)) {
@@ -93,7 +92,11 @@ public class WorldController {
     }
 
     private void updatePlayer() {
-        gravityDetection();
+        if (isFalling(player)) {
+            player.getVelocity().y -= player.gravity * delta;
+        } else {
+            player.setState(State.WALKING);
+        }
         // Before we change the X velocity store it as we want to restore if we hit a flamer.
         float velocityX = player.getVelocity().x;
         float velocityY = player.getVelocity().y;
@@ -113,16 +116,20 @@ public class WorldController {
         Array<BoundObject> arrFlamers = world.getFlamers();
         for (int i = 0; i < arrFlamers.size; i++) {
             BoundObject flamer = arrFlamers.get(i);
-            if (!flamer.facingLeft) {
-                flamer.getVelocity().x = Flamer.SPEED;
-            } else {
-                flamer.getVelocity().x = -Flamer.SPEED;
-            }
+            // Check if they hit a wall, if so turn around.
             if (collisionDetection(flamer, world.getBlocks(), false)) {
                 flamer.facingLeft = !flamer.facingLeft;
-            } else {
-                flamer.update(delta);
             }
+            // The flamer may have moved to an area where he is going to fall, check.
+            if (isOnEdge(flamer)) {
+                flamer.facingLeft = !flamer.facingLeft;
+            }
+            if (!flamer.facingLeft) {
+                flamer.getVelocity().x = flamer.speed;
+            } else {
+                flamer.getVelocity().x = -flamer.speed;
+            }
+            flamer.update(delta);
             if (collisionDetection(flamer, world.getBullets(), true)) {
                 flamer.hit();
                 if (flamer.isDead()) {
@@ -144,23 +151,36 @@ public class WorldController {
         }
     }
 
-    private void gravityDetection() {
-        // Assume we are falling for now.
-        falling = true;
+    private boolean isFalling(BoundObject object) {
         // Create a temporary rectangle used to detect collision.
-        Rectangle tempRect = player.getBounds();
-        tempRect.y -= Player.GRAVITY * delta;
+        Rectangle tempRect = new Rectangle(object.getBounds());
+        tempRect.y -= object.gravity * delta;
         for (BoundObject block : world.getBlocks()) {
             if (tempRect.overlaps(block.getBounds())) {
-                falling = false;
-                break;
+                return false;
             }
         }
-        if (falling) {
-            player.getVelocity().y -= Player.GRAVITY * delta;
+
+        return true;
+    }
+
+    private boolean isOnEdge(BoundObject object) {
+        // Create a temporary rectangle used to detect collision.
+        Rectangle tempRect = new Rectangle(object.getBounds());
+        // Check if the object is facing left.
+        if (object.facingLeft) {
+            tempRect.x = object.getBounds().x - object.width;
         } else {
-            player.setState(State.WALKING);
+            tempRect.x = object.getBounds().x + object.width;
         }
+        tempRect.y -= object.gravity * delta;
+        for (BoundObject block : world.getBlocks()) {
+            if (tempRect.overlaps(block.getBounds())) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private boolean collisionDetection(BoundObject object, Array<BoundObject> items,

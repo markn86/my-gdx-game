@@ -6,15 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Player extends BoundObject {
 
-    public enum State {
-        IDLE, WALKING, JUMPING
-    }
-
     private World world;
-
-    public static final float SPEED = 60f; // Units per second.
-    public static final float JUMP_VELOCITY = 70f;
-    public static final float GRAVITY = 70f;
 
     public int health = 3;
     public float hitFrequency = 2; // Determines how quickly they can be hit.
@@ -22,27 +14,17 @@ public class Player extends BoundObject {
     public float timeSinceLastShot = 0;
     public float shotFrequency = 1; // How often they are allowed to shoot.
 
-    public State state = State.IDLE;
     public boolean isSpawned = false;
-
-    // The time the player has spent in a moving state.
-    public float movingStateTime = 0;
 
     public Player(Vector2 position, World world) {
         super(position, 15f, 25f);
+        // Override the gravity variable set.
+        this.gravity = 70f;
         this.world = world;
     }
 
     public State getState() {
         return state;
-    }
-
-    public void setState(State newState) {
-        // Changed state, so set the time in this state back to 0.
-        if (this.state != newState) {
-            this.movingStateTime = 0;
-        }
-        this.state = newState;
     }
 
     public void update(float delta) {

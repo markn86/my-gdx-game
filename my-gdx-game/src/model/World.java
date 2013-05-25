@@ -63,7 +63,7 @@ public class World {
                         }
                         break;
                     case 0x5f5f5f: // The flamer.
-                        flamers.add(new Flamer(new Vector2(pixelX, pixelY + 1)));
+                        flamers.add(new Flamer(new Vector2(pixelX, pixelY+ 0.5f)));
                         break;
                 }
             }

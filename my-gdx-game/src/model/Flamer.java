@@ -4,17 +4,10 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Flamer extends BoundObject {
 
-    public enum State {
-        IDLE, WALKING, JUMPING
-    }
-
-    public static final float SPEED = 20f; // Units per second.
-
     public int health = 3;
     public float timeSinceHit = 0;
     public float hitFrequency = 2; // How often they can be hit.
 
-    State state = State.IDLE;
     public boolean falling = false;
 
     public Flamer(Vector2 position) {
@@ -23,6 +16,7 @@ public class Flamer extends BoundObject {
 
     public void update(float delta) {
         super.update(delta);
+        this.speed = 20f;
         timeSinceHit += delta;
     }
 
